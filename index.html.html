@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Şans Doygunluğu Problemi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF9F5;
+    --ink:#181C22;
+    --ink-soft:#565B66;
+    --brass:#B9924F;
+    --brass-dim:#E7D9B8;
+    --teal:#2C6863;
+    --teal-dim:#DCE9E7;
+    --rust:#A8462F;
+    --rust-dim:#F0DAD3;
+    --line:#DEDAD0;
+    --card:#FFFFFF;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(24,28,34,0.04), 0 8px 24px -12px rgba(24,28,34,0.18);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{
+    max-width:520px;
+    margin:0 auto;
+    padding:28px 20px 60px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass);
+    font-weight:600;
+    margin-bottom:8px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:30px;
+    line-height:1.15;
+    margin:0 0 14px;
+    letter-spacing:-0.01em;
+  }
+  h2{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:22px;
+    margin:0 0 10px;
+  }
+  p{
+    font-size:15px;
+    line-height:1.6;
+    color:var(--ink-soft);
+    margin:0 0 16px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:24px 22px;
+    border:1px solid var(--line);
+  }
+  .stack{display:flex; flex-direction:column; gap:14px;}
+  .btn{
+    appearance:none;
+    border:none;
+    border-radius:10px;
+    padding:15px 20px;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    width:100%;
+  }
+  .btn:active{ transform:scale(0.98); }
+  .btn-primary{
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .btn-primary:hover{ opacity:0.88; }
+  .btn-stop{
+    background:var(--rust);
+    color:#fff;
+  }
+  .btn-stop:hover{ opacity:0.9; }
+  .btn-ghost{
+    background:transparent;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+  }
+  .btn-ghost:hover{ background:#F2F0EA; }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field label{ font-size:13px; font-weight:600; color:var(--ink); }
+  select, input[type=text]{
+    font-family:inherit;
+    font-size:15px;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#fff;
+    color:var(--ink);
+  }
+  .choice-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .choice{
+    flex:1;
+    min-width:80px;
+    text-align:center;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    color:var(--ink-soft);
+    background:#fff;
+  }
+  .choice.active{
+    border-color:var(--teal);
+    background:var(--teal-dim);
+    color:var(--teal);
+  }
+  .progress{
+    display:flex;
+    gap:5px;
+    margin-bottom:22px;
+  }
+  .progress .dot{
+    height:4px;
+    flex:1;
+    border-radius:2px;
+    background:var(--line);
+  }
+  .progress .dot.done{ background:var(--brass); }
+  .progress .dot.current{ background:var(--ink); }
+
+  /* Index-card ticket for the arriving candidate */
+  .ticket{
+    position:relative;
+    background:linear-gradient(180deg,#FFFFFF,#FCFAF5);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:0;
+    overflow:hidden;
+    margin-bottom:18px;
+  }
+  .ticket-tab{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:'Fraunces',serif;
+    font-size:13px;
+    letter-spacing:0.04em;
+    padding:9px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .ticket-body{
+    padding:26px 20px 22px;
+    text-align:center;
+  }
+  .ticket-num{
+    font-family:'Fraunces',serif;
+    font-size:56px;
+    font-weight:700;
+    line-height:1;
+    color:var(--ink);
+  }
+  .ticket-sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:6px;
+  }
+  .tag{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    margin-top:14px;
+    padding:7px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+  }
+  .tag.best{ background:var(--teal-dim); color:var(--teal); }
+  .tag.notbest{ background:#EFEDE7; color:var(--ink-soft); }
+  .actions{ display:flex; flex-direction:column; gap:10px; }
+  .note-forced{
+    font-size:13px;
+    color:var(--rust);
+    text-align:center;
+    font-weight:600;
+    margin-bottom:10px;
+  }
+  .result-badge{
+    text-align:center;
+    padding:26px 20px;
+    border-radius:12px;
+    margin-bottom:16px;
+  }
+  .result-badge.win{ background:var(--teal-dim); }
+  .result-badge.lose{ background:var(--rust-dim); }
+  .result-badge .big{
+    font-family:'Fraunces',serif;
+    font-size:20px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .win .big{ color:var(--teal); }
+  .lose .big{ color:var(--rust); }
+  .foot-link{
+    margin-top:26px;
+    text-align:center;
+    font-size:13px;
+    color:var(--ink-soft);
+    text-decoration:underline;
+    cursor:pointer;
+    background:none;
+    border:none;
+    font-family:inherit;
+  }
+  .stat-row{
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid var(--line);
+    font-size:14px;
+  }
+  .stat-row:last-child{ border-bottom:none; }
+  .stat-row .v{ font-weight:700; font-family:'Fraunces',serif; }
+  .n-badge{
+    display:inline-block;
+    background:var(--brass-dim);
+    color:#7A5D24;
+    font-weight:700;
+    font-size:12px;
+    padding:3px 9px;
+    border-radius:6px;
+    margin-bottom:8px;
+  }
+  .disabled{ opacity:0.4; pointer-events:none; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+(function(){
+  const N_VALUES = [5, 12, 20];
+  const TOTAL_SCREENS = 2 + N_VALUES.length; // demo + instructions + trials, roughly, for progress bar
+
+  let state = {
+    screen: 'welcome',
+    demo: { bolum: '', sinif: '', ders: '' },
+    order: shuffle(N_VALUES.slice()),
+    trialIndex: 0,
+    trial: null,        // current trial data
+    trialResults: [],   // completed trials
+    startedAt: Date.now()
+  };
+
+  function shuffle(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function newTrial(n){
+    const values = Array.from({length:n}, () => Math.random());
+    const bestIndex = values.indexOf(Math.max(...values));
+    return { n, values, bestIndex, pos: 0, seenMax: -Infinity, stopped:false };
+  }
+
+  function el(html){
+    const div = document.createElement('div');
+    div.innerHTML = html.trim();
+    return div.firstChild;
+  }
+
+  function render(){
+    const root = document.getElementById('app');
+    root.innerHTML = '';
+    root.appendChild(screens[state.screen]());
+  }
+
+  function progressBar(activeIdx, total){
+    let dots = '';
+    for(let i=0;i<total;i++){
+      const cls = i < activeIdx ? 'done' : (i === activeIdx ? 'current' : '');
+      dots += `<div class="dot ${cls}"></div>`;
+    }
+    return `<div class="progress">${dots}</div>`;
+  }
+
+  const screens = {};
+
+  screens.welcome = function(){
+    const wrap = el(`
+      <div>
+        <div class="eyebrow">Ankara Üniversitesi · İstatistik Araştırması</div>
+        <h1>Şans Doygunluğu Problemi</h1>
+        <div class="card stack">
+          <p style="margin-bottom:0">Sana sırayla adaylar (iş adayı gibi düşün) gösterilecek. Her adayda "geç" ya da "bu adayı seç ve dur" diyeceksin — durduğunda geri dönemiyorsun. Amaç, karşına çıkanlar arasından <b>en iyisini</b> yakalamak.</p>
+        </div>
+        <div style="height:14px"></div>
+        <div class="card stack">
+          <p style="margin-bottom:0; font-size:13px;">Kimlik bilgisi toplanmıyor, ~2 dakika sürüyor. Cevapların bir istatistik araştırmasında anonim olarak kullanılacak.</p>
+        </div>
+        <div style="height:20px"></div>
+        <button class="btn btn-primary" id="start">Başla</button>
+      </div>
+    `);
+    wrap.querySelector('#start').onclick = () => { state.screen = 'demo'; render(); };
+    return wrap;
+  };
+
+  screens.demo = function(){
+    const wrap = el(`
+      <div>
+        ${progressBar(0, TOTAL_SCREENS)}
+        <h2>Birkaç kısa soru</h2>
+        <p>Sonuçları yorumlarken işimize yarayacak.</p>
+        <div class="card stack">
+          <div class="field">
+            <label>Bölümün</label>
+            <input type="text" id="bolum" placeholder="ör. İstatistik" value="${state.demo.bolum}">
+          </div>
+          <div class="field">
+            <label>Kaçıncı sınıf</label>
+            <div class="choice-row" id="sinifRow">
+              ${['1','2','3','4','Mezun'].map(s => `<div class="choice ${state.demo.sinif===s?'active':''}" data-v="${s}">${s}</div>`).join('')}
+            </div>
+          </div>
+          <div class="field">
+            <label>Olasılık/istatistik dersi aldın mı?</label>
+            <div class="choice-row" id="dersRow">
+              ${['Evet','Hayır'].map(s => `<div class="choice ${state.demo.ders===s?'active':''}" data-v="${s}">${s}</div>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+        <button class="btn btn-primary" id="next">Devam Et</button>
+      </div>
+    `);
+    wrap.querySelector('#bolum').oninput = (e) => { state.demo.bolum = e.target.value; };
+    wrap.querySelectorAll('#sinifRow .choice').forEach(c => c.onclick = () => {
+      state.demo.sinif = c.dataset.v; render();
+    });
+    wrap.querySelectorAll('#dersRow .choice').forEach(c => c.onclick = () => {
+      state.demo.ders = c.dataset.v; render();
+    });
+    wrap.querySelector('#next').onclick = () => { state.screen = 'instructions'; render(); };
+    return wrap;
+  };
+
+  screens.instructions = function(){
+    const wrap = el(`
+      <div>
+        ${progressBar(1, TOTAL_SCREENS)}
+        <h2>Kurallar</h2>
+        <div class="card stack">
+          <p style="margin-bottom:10px">• Adaylar sırayla, tek tek gösterilecek.</p>
+          <p style="margin-bottom:10px">• Her adayda, o ana kadar gördüklerin arasında <b>en iyisi olup olmadığını</b> göreceksin — ama sırada kim var bilemiyorsun.</p>
+          <p style="margin-bottom:10px">• "Geç" dersen bir daha o adaya dönemezsin.</p>
+          <p style="margin-bottom:0">• "Bu adayı seç, dur" dersen o an oyun biter ve gerçekten en iyisini seçip seçmediğini göreceksin.</p>
+        </div>
+        <div style="height:20px"></div>
+        <button class="btn btn-primary" id="go">Anladım, başlayalım</button>
+      </div>
+    `);
+    wrap.querySelector('#go').onclick = () => {
+      state.trial = newTrial(state.order[0]);
+      state.screen = 'trial';
+      render();
+    };
+    return wrap;
+  };
+
+  screens.trial = function(){
+    const t = state.trial;
+    const idx = t.pos; // 0-based index of current candidate
+    const val = t.values[idx];
+    const isBest = val > t.seenMax;
+    const isLast = idx === t.n - 1;
+
+    const wrap = el(`
+      <div>
+        ${progressBar(2 + state.trialIndex, TOTAL_SCREENS)}
+        <div class="n-badge">Tur ${state.trialIndex + 1} / ${N_VALUES.length} · n = ${t.n}</div>
+        <div class="ticket">
+          <div class="ticket-tab">
+            <span>ADAY DOSYASI</span>
+            <span>${idx + 1} / ${t.n}</span>
+          </div>
+          <div class="ticket-body">
+            <div class="ticket-num">${idx + 1}</div>
+            <div class="ticket-sub">şu ana kadar gördüğün ${idx + 1}. aday</div>
+            <div class="tag ${isBest ? 'best' : 'notbest'}">${isBest ? '★ Şimdiye kadarkilerin en iyisi' : 'Şimdiye kadarkilerin en iyisi değil'}</div>
+          </div>
+        </div>
+        ${isLast ? '<div class="note-forced">Bu son aday — birini seçmek zorundasın.</div>' : ''}
+        <div class="actions">
+          ${!isLast ? '<button class="btn btn-ghost" id="pass">Geç, sıradakine bak →</button>' : ''}
+          <button class="btn btn-stop" id="stop">${isLast ? 'Bu Adayı Seç (Son Şansın)' : 'Bu Adayı Seç ve Dur'}</button>
+        </div>
+      </div>
+    `);
+
+    if(!isLast){
+      wrap.querySelector('#pass').onclick = () => {
+        t.seenMax = Math.max(t.seenMax, val);
+        t.pos += 1;
+        render();
+      };
+    }
+    wrap.querySelector('#stop').onclick = () => {
+      const success = (idx === t.bestIndex);
+      state.trialResults.push({
+        n: t.n,
+        stopPosition: idx + 1,
+        success,
+        trueBestPosition: t.bestIndex + 1
+      });
+      state.screen = 'trialResult';
+      render();
+    };
+    return wrap;
+  };
+
+  screens.trialResult = function(){
+    const r = state.trialResults[state.trialResults.length - 1];
+    const isLastTrial = state.trialIndex === N_VALUES.length - 1;
+    const wrap = el(`
+      <div>
+        ${progressBar(2 + state.trialIndex, TOTAL_SCREENS)}
+        <div class="result-badge ${r.success ? 'win' : 'lose'}">
+          <div class="big">${r.success ? 'En iyisini yakaladın 🎯' : 'Bu sefer olmadı'}</div>
+          <p style="margin:0; font-size:13px;">${r.success ? `${r.stopPosition}. adayda durdun ve gerçekten en iyisi oymuş.` : `${r.stopPosition}. adayda durdun. Gerçek en iyi aday ${r.trueBestPosition}. sıradaymış.`}</p>
+        </div>
+        <button class="btn btn-primary" id="cont">${isLastTrial ? 'Bitir' : 'Sıradaki Tura Geç'}</button>
+      </div>
+    `);
+    wrap.querySelector('#cont').onclick = () => {
+      if(isLastTrial){
+        state.screen = 'done';
+      } else {
+        state.trialIndex += 1;
+        state.trial = newTrial(state.order[state.trialIndex]);
+        state.screen = 'trial';
+      }
+      render();
+    };
+    return wrap;
+  };
+
+  screens.done = function(){
+    const url = buildPrefilledUrl();
+    const wrap = el(`
+      <div>
+        <div class="eyebrow">Son bir adım kaldı</div>
+        <h1>Kaydı tamamla</h1>
+        <div class="card">
+          <p style="margin-bottom:0">Cevaplarını kaydetmek için aşağıdaki butona bas, açılan sayfada da <b>"Gönder"</b> butonuna bas. Bu adım olmadan cevapların kaydedilmiyor.</p>
+        </div>
+        <div style="height:16px"></div>
+        <a class="btn btn-stop" style="display:block; text-align:center; text-decoration:none;" href="${url}" target="_blank" rel="noopener">Cevaplarımı Kaydet →</a>
+      </div>
+    `);
+    return wrap;
+  };
+
+  // Google Form arka-plan gönderim ayarları
+  const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdvBLXr7N_LaCpGuaLNcT0YHKwAvNJJ0WbA_8YhVLu2eg7Y0w/formResponse';
+  const ENTRY = {
+    bolum: 'entry.1942593130',
+    sinif: 'entry.1374702133',
+    ders: 'entry.666989072',
+    n5dur: 'entry.75216222',
+    n5iyi: 'entry.885061787',
+    n12dur: 'entry.227200009',
+    n12iyi: 'entry.1274098599',
+    n20dur: 'entry.2092638518',
+    n20iyi: 'entry.1446373079'
+  };
+
+  function buildPrefilledUrl(){
+    const byN = {};
+    state.trialResults.forEach(r => { byN[r.n] = r; });
+
+    const base = 'https://docs.google.com/forms/d/e/1FAIpQLSdvBLXr7N_LaCpGuaLNcT0YHKwAvNJJ0WbA_8YhVLu2eg7Y0w/viewform';
+    const params = new URLSearchParams();
+    params.append('usp', 'pp_url');
+    params.append(ENTRY.bolum, state.demo.bolum || '');
+    params.append(ENTRY.sinif, state.demo.sinif || '');
+    params.append(ENTRY.ders, state.demo.ders || '');
+    params.append(ENTRY.n5dur, byN[5] ? String(byN[5].stopPosition) : '');
+    params.append(ENTRY.n5iyi, byN[5] ? (byN[5].success ? 'Evet' : 'Hayır') : '');
+    params.append(ENTRY.n12dur, byN[12] ? String(byN[12].stopPosition) : '');
+    params.append(ENTRY.n12iyi, byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '');
+    params.append(ENTRY.n20dur, byN[20] ? String(byN[20].stopPosition) : '');
+    params.append(ENTRY.n20iyi, byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : '');
+    return base + '?' + params.toString();
+  }
+
+
+
+  render();
+})();
+</script>
+</body>
+</html>
