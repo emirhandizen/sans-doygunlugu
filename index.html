@@ -1,527 +1,1438 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Şans Doygunluğu Problemi</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --paper:#FAF9F5;
-    --ink:#181C22;
-    --ink-soft:#565B66;
-    --brass:#B9924F;
-    --brass-dim:#E7D9B8;
-    --teal:#2C6863;
-    --teal-dim:#DCE9E7;
-    --rust:#A8462F;
-    --rust-dim:#F0DAD3;
-    --line:#DEDAD0;
-    --card:#FFFFFF;
-    --radius:14px;
-    --shadow:0 1px 2px rgba(24,28,34,0.04), 0 8px 24px -12px rgba(24,28,34,0.18);
-  }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'Inter',system-ui,sans-serif;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-  }
-  .wrap{
-    max-width:520px;
-    margin:0 auto;
-    padding:28px 20px 60px;
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-  }
-  .eyebrow{
-    font-size:12px;
-    letter-spacing:0.14em;
-    text-transform:uppercase;
-    color:var(--brass);
-    font-weight:600;
-    margin-bottom:8px;
-  }
-  h1{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:30px;
-    line-height:1.15;
-    margin:0 0 14px;
-    letter-spacing:-0.01em;
-  }
-  h2{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:22px;
-    margin:0 0 10px;
-  }
-  p{
-    font-size:15px;
-    line-height:1.6;
-    color:var(--ink-soft);
-    margin:0 0 16px;
-  }
-  .card{
-    background:var(--card);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:24px 22px;
-    border:1px solid var(--line);
-  }
-  .stack{display:flex; flex-direction:column; gap:14px;}
-  .btn{
-    appearance:none;
-    border:none;
-    border-radius:10px;
-    padding:15px 20px;
-    font-family:inherit;
-    font-size:15px;
-    font-weight:600;
-    cursor:pointer;
-    transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
-    width:100%;
-  }
-  .btn:active{ transform:scale(0.98); }
-  .btn-primary{
-    background:var(--ink);
-    color:var(--paper);
-  }
-  .btn-primary:hover{ opacity:0.88; }
-  .btn-stop{
-    background:var(--rust);
-    color:#fff;
-  }
-  .btn-stop:hover{ opacity:0.9; }
-  .btn-ghost{
-    background:transparent;
-    color:var(--ink-soft);
-    border:1px solid var(--line);
-  }
-  .btn-ghost:hover{ background:#F2F0EA; }
-  .field{ display:flex; flex-direction:column; gap:6px; }
-  .field label{ font-size:13px; font-weight:600; color:var(--ink); }
-  select, input[type=text]{
-    font-family:inherit;
-    font-size:15px;
-    padding:12px 14px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    background:#fff;
-    color:var(--ink);
-  }
-  .choice-row{ display:flex; gap:8px; flex-wrap:wrap; }
-  .choice{
-    flex:1;
-    min-width:80px;
-    text-align:center;
-    padding:10px 12px;
-    border-radius:10px;
-    border:1px solid var(--line);
-    font-size:14px;
-    font-weight:600;
-    cursor:pointer;
-    color:var(--ink-soft);
-    background:#fff;
-  }
-  .choice.active{
-    border-color:var(--teal);
-    background:var(--teal-dim);
-    color:var(--teal);
-  }
-  .progress{
-    display:flex;
-    gap:5px;
-    margin-bottom:22px;
-  }
-  .progress .dot{
-    height:4px;
-    flex:1;
-    border-radius:2px;
-    background:var(--line);
-  }
-  .progress .dot.done{ background:var(--brass); }
-  .progress .dot.current{ background:var(--ink); }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <title>Şans Doygunluğu Problemi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#FAF9F5;
+      --ink:#181C22;
+      --ink-soft:#565B66;
+      --brass:#B9924F;
+      --brass-dim:#E7D9B8;
+      --teal:#2C6863;
+      --teal-dim:#DCE9E7;
+      --rust:#A8462F;
+      --rust-dim:#F0DAD3;
+      --line:#DEDAD0;
+      --card:#FFFFFF;
+      --radius:14px;
+      --shadow:0 1px 2px rgba(24,28,34,0.04), 0 8px 24px -12px rgba(24,28,34,0.18);
+    }
 
-  /* Index-card ticket for the arriving candidate */
-  .ticket{
-    position:relative;
-    background:linear-gradient(180deg,#FFFFFF,#FCFAF5);
-    border:1px solid var(--line);
-    border-radius:12px;
-    padding:0;
-    overflow:hidden;
-    margin-bottom:18px;
-  }
-  .ticket-tab{
-    background:var(--ink);
-    color:var(--paper);
-    font-family:'Fraunces',serif;
-    font-size:13px;
-    letter-spacing:0.04em;
-    padding:9px 16px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-  }
-  .ticket-body{
-    padding:26px 20px 22px;
-    text-align:center;
-  }
-  .ticket-num{
-    font-family:'Fraunces',serif;
-    font-size:56px;
-    font-weight:700;
-    line-height:1;
-    color:var(--ink);
-  }
-  .ticket-sub{
-    font-size:13px;
-    color:var(--ink-soft);
-    margin-top:6px;
-  }
-  .tag{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    margin-top:14px;
-    padding:7px 14px;
-    border-radius:999px;
-    font-size:13px;
-    font-weight:600;
-  }
-  .tag.best{ background:var(--teal-dim); color:var(--teal); }
-  .tag.notbest{ background:#EFEDE7; color:var(--ink-soft); }
-  .actions{ display:flex; flex-direction:column; gap:10px; }
-  .note-forced{
-    font-size:13px;
-    color:var(--rust);
-    text-align:center;
-    font-weight:600;
-    margin-bottom:10px;
-  }
-  .result-badge{
-    text-align:center;
-    padding:26px 20px;
-    border-radius:12px;
-    margin-bottom:16px;
-  }
-  .result-badge.win{ background:var(--teal-dim); }
-  .result-badge.lose{ background:var(--rust-dim); }
-  .result-badge .big{
-    font-family:'Fraunces',serif;
-    font-size:20px;
-    font-weight:600;
-    margin-bottom:4px;
-  }
-  .win .big{ color:var(--teal); }
-  .lose .big{ color:var(--rust); }
-  .foot-link{
-    margin-top:26px;
-    text-align:center;
-    font-size:13px;
-    color:var(--ink-soft);
-    text-decoration:underline;
-    cursor:pointer;
-    background:none;
-    border:none;
-    font-family:inherit;
-  }
-  .stat-row{
-    display:flex;
-    justify-content:space-between;
-    padding:10px 0;
-    border-bottom:1px solid var(--line);
-    font-size:14px;
-  }
-  .stat-row:last-child{ border-bottom:none; }
-  .stat-row .v{ font-weight:700; font-family:'Fraunces',serif; }
-  .n-badge{
-    display:inline-block;
-    background:var(--brass-dim);
-    color:#7A5D24;
-    font-weight:700;
-    font-size:12px;
-    padding:3px 9px;
-    border-radius:6px;
-    margin-bottom:8px;
-  }
-  .disabled{ opacity:0.4; pointer-events:none; }
-</style>
+    *{box-sizing:border-box;}
+
+    body{
+      margin:0;
+      background:var(--paper);
+      color:var(--ink);
+      font-family:'Inter',system-ui,sans-serif;
+      -webkit-font-smoothing:antialiased;
+      min-height:100vh;
+    }
+
+    .wrap{
+      max-width:520px;
+      margin:0 auto;
+      padding:28px 20px 60px;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .eyebrow{
+      font-size:12px;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--brass);
+      font-weight:600;
+      margin-bottom:8px;
+    }
+
+    h1{
+      font-family:'Fraunces',serif;
+      font-weight:600;
+      font-size:30px;
+      line-height:1.15;
+      margin:0 0 14px;
+      letter-spacing:-0.01em;
+    }
+
+    h2{
+      font-family:'Fraunces',serif;
+      font-weight:600;
+      font-size:22px;
+      margin:0 0 10px;
+    }
+
+    p{
+      font-size:15px;
+      line-height:1.6;
+      color:var(--ink-soft);
+      margin:0 0 16px;
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:24px 22px;
+      border:1px solid var(--line);
+    }
+
+    .stack{display:flex; flex-direction:column; gap:14px;}
+
+    .btn{
+      appearance:none;
+      border:none;
+      border-radius:10px;
+      padding:15px 20px;
+      font-family:inherit;
+      font-size:15px;
+      font-weight:600;
+      cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+      width:100%;
+    }
+
+    .btn:active{transform:scale(0.98);}
+    .btn:disabled{opacity:.55; cursor:not-allowed; transform:none;}
+
+    .btn-primary{background:var(--ink); color:var(--paper);}
+    .btn-primary:hover:not(:disabled){opacity:0.88;}
+
+    .btn-stop{background:var(--rust); color:#fff;}
+    .btn-stop:hover:not(:disabled){opacity:0.9;}
+
+    .btn-ghost{
+      background:transparent;
+      color:var(--ink-soft);
+      border:1px solid var(--line);
+    }
+    .btn-ghost:hover:not(:disabled){background:#F2F0EA;}
+
+    .field{display:flex; flex-direction:column; gap:6px;}
+    .field label{font-size:13px; font-weight:600; color:var(--ink);}
+
+    input[type=text]{
+      font-family:inherit;
+      font-size:15px;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--ink);
+      outline:none;
+    }
+
+    input[type=text]:focus{
+      border-color:var(--teal);
+      box-shadow:0 0 0 3px rgba(44,104,99,.10);
+    }
+
+    input.input-error{border-color:var(--rust);}
+
+    .choice-row{display:flex; gap:8px; flex-wrap:wrap;}
+
+    .choice{
+      flex:1;
+      min-width:80px;
+      text-align:center;
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid var(--line);
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      color:var(--ink-soft);
+      background:#fff;
+      user-select:none;
+    }
+
+    .choice.active{
+      border-color:var(--teal);
+      background:var(--teal-dim);
+      color:var(--teal);
+    }
+
+    .choice-row.choice-error{
+      padding:4px;
+      margin:-4px;
+      border:1px solid var(--rust);
+      border-radius:12px;
+    }
+
+    .error-box{
+      display:none;
+      border-radius:10px;
+      padding:12px 14px;
+      background:var(--rust-dim);
+      color:var(--rust);
+      font-size:13px;
+      line-height:1.45;
+      font-weight:600;
+    }
+    .error-box.show{display:block;}
+
+    .progress{display:flex; gap:5px; margin-bottom:22px;}
+    .progress .dot{height:4px; flex:1; border-radius:2px; background:var(--line);}
+    .progress .dot.done{background:var(--brass);}
+    .progress .dot.current{background:var(--ink);}
+
+    .ticket{
+      position:relative;
+      background:linear-gradient(180deg,#FFFFFF,#FCFAF5);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:0;
+      overflow:hidden;
+      margin-bottom:18px;
+    }
+
+    .ticket-tab{
+      background:var(--ink);
+      color:var(--paper);
+      font-family:'Fraunces',serif;
+      font-size:13px;
+      letter-spacing:0.04em;
+      padding:9px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .ticket-body{padding:26px 20px 22px; text-align:center;}
+
+    .ticket-num{
+      font-family:'Fraunces',serif;
+      font-size:56px;
+      font-weight:700;
+      line-height:1;
+      color:var(--ink);
+    }
+
+    .ticket-sub{font-size:13px; color:var(--ink-soft); margin-top:6px;}
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      margin-top:14px;
+      padding:7px 14px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .tag.best{background:var(--teal-dim); color:var(--teal);}
+    .tag.notbest{background:#EFEDE7; color:var(--ink-soft);}
+
+
+    .candidate-summary{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:18px;
+      text-align:left;
+    }
+
+    .candidate-code{
+      font-family:'Fraunces',serif;
+      font-size:25px;
+      font-weight:700;
+      line-height:1.1;
+      color:var(--ink);
+    }
+
+    .candidate-meta{
+      margin-top:5px;
+      color:var(--ink-soft);
+      font-size:12px;
+      line-height:1.45;
+    }
+
+    .candidate-position{
+      min-width:48px;
+      height:48px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      display:grid;
+      place-items:center;
+      font-family:'Fraunces',serif;
+      font-size:21px;
+      font-weight:700;
+      background:#fff;
+    }
+
+    .competency-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin:0 0 18px;
+      text-align:left;
+    }
+
+    .competency-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      margin-bottom:5px;
+    }
+
+    .competency-name{font-weight:600; color:var(--ink);}
+    .competency-value{font-weight:700; color:var(--ink-soft);}
+    .competency-track{
+      height:7px;
+      border-radius:999px;
+      background:#ECE9E1;
+      overflow:hidden;
+    }
+
+    .competency-fill{
+      height:100%;
+      border-radius:inherit;
+      background:var(--teal);
+    }
+
+    .story-card{
+      text-align:left;
+      background:#F4F1EA;
+      border:1px solid #E4DED1;
+      border-radius:10px;
+      padding:14px 15px;
+    }
+
+    .story-label{
+      font-size:10px;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      font-weight:700;
+      color:#7A5D24;
+      margin-bottom:6px;
+    }
+
+    .story-card p{
+      font-size:13px;
+      line-height:1.55;
+      margin:0;
+      color:var(--ink-soft);
+    }
+
+    .profile-comparison{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin:14px 0 18px;
+    }
+
+    .profile-score-box{
+      border:1px solid var(--line);
+      border-radius:10px;
+      padding:12px;
+      background:#fff;
+      text-align:center;
+    }
+
+    .profile-score-box span{
+      display:block;
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--ink-soft);
+      margin-bottom:4px;
+    }
+
+    .profile-score-box strong{
+      font-family:'Fraunces',serif;
+      font-size:22px;
+    }
+
+    .actions{display:flex; flex-direction:column; gap:10px;}
+
+    .note-forced{
+      font-size:13px;
+      color:var(--rust);
+      text-align:center;
+      font-weight:600;
+      margin-bottom:10px;
+    }
+
+    .result-badge{
+      text-align:center;
+      padding:26px 20px;
+      border-radius:12px;
+      margin-bottom:16px;
+    }
+
+    .result-badge.win{background:var(--teal-dim);}
+    .result-badge.lose{background:var(--rust-dim);}
+
+    .result-badge .big{
+      font-family:'Fraunces',serif;
+      font-size:20px;
+      font-weight:600;
+      margin-bottom:4px;
+    }
+
+    .win .big{color:var(--teal);}
+    .lose .big{color:var(--rust);}
+
+    .n-badge{
+      display:inline-block;
+      background:var(--brass-dim);
+      color:#7A5D24;
+      font-weight:700;
+      font-size:12px;
+      padding:3px 9px;
+      border-radius:6px;
+      margin-bottom:8px;
+    }
+
+    .save-icon{
+      width:54px;
+      height:54px;
+      margin:4px auto 16px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      font-size:25px;
+      background:var(--teal-dim);
+      color:var(--teal);
+    }
+
+    .save-icon.loading{
+      background:var(--brass-dim);
+      color:#7A5D24;
+      animation:pulse 1.1s ease-in-out infinite;
+    }
+
+    .save-icon.error{background:var(--rust-dim); color:var(--rust); animation:none;}
+
+    .save-detail{
+      font-size:13px;
+      text-align:center;
+      color:var(--ink-soft);
+      margin-top:10px;
+    }
+
+    .fallback-link{
+      display:block;
+      text-align:center;
+      margin-top:14px;
+      color:var(--ink-soft);
+      font-size:13px;
+    }
+
+    @keyframes pulse{
+      0%,100%{transform:scale(1); opacity:.7;}
+      50%{transform:scale(1.06); opacity:1;}
+    }
+  </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+  <div class="wrap" id="app"></div>
 
-<script>
-(function(){
-  const N_VALUES = [5, 12, 20];
-  const TOTAL_SCREENS = 2 + N_VALUES.length; // demo + instructions + trials, roughly, for progress bar
+  <script>
+  (function(){
+    'use strict';
 
-  let state = {
-    screen: 'welcome',
-    demo: { bolum: '', sinif: '', ders: '' },
-    order: shuffle(N_VALUES.slice()),
-    trialIndex: 0,
-    trial: null,        // current trial data
-    trialResults: [],   // completed trials
-    startedAt: Date.now()
-  };
+    // Deney düzeni şimdilik mevcut hâliyle korunuyor.
+    const N_VALUES = [5, 12, 20];
+    const TOTAL_SCREENS = 2 + N_VALUES.length;
 
-  function shuffle(arr){
-    for(let i = arr.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
+    const COMPETENCIES = [
+      {
+        key:'discipline',
+        label:'Disiplin',
+        weight:0.25
+      },
+      {
+        key:'communication',
+        label:'İletişim',
+        weight:0.25
+      },
+      {
+        key:'adaptability',
+        label:'Uyum ve öğrenme',
+        weight:0.25
+      },
+      {
+        key:'analysis',
+        label:'Analitik düşünme',
+        weight:0.25
+      }
+    ];
 
-  function newTrial(n){
-    const values = Array.from({length:n}, () => Math.random());
-    const bestIndex = values.indexOf(Math.max(...values));
-    return { n, values, bestIndex, pos: 0, seenMax: -Infinity, stopped:false };
-  }
+    const CANDIDATE_STORIES = [
+      // Disiplin odaklı profiller
+      {
+        id:'magaza-satis', primary:'discipline',
+        intro:'Ben {years} yıldır bir giyim mağazasında satış danışmanı olarak çalışıyorum.',
+        developing:'Kasa ve reyon işlerinde ekibe destek oluyorum; yoğun saatlerde öncelik sıralamamı geliştirmeye çalışıyorum.',
+        solid:'Kasa, reyon ve kapanış işlerini düzenli takip edip vardiyayı aksatmadan tamamlıyorum.',
+        strong:'Yoğun günlerde görev planını toparlayıp kasa, reyon ve kapanışın eksiksiz ilerlemesini sağlıyorum.'
+      },
+      {
+        id:'depo-operasyon', primary:'discipline',
+        intro:'Son {years} yıldır bir depoda sevkiyat ekibindeyim.',
+        developing:'Ürün toplama ve paketleme süreçlerinde çalışıyorum; hızımı artırırken kontrol adımlarını atlamamaya dikkat ediyorum.',
+        solid:'Sipariş listesini düzenli kontrol ediyor, eksik ürünleri sevkiyattan önce fark ediyorum.',
+        strong:'Vardiya kontrol listesini yenileyerek yanlış ve eksik sevkiyatların belirgin biçimde azalmasına katkı sağladım.'
+      },
+      {
+        id:'muhasebe-asistani', primary:'discipline',
+        intro:'Yaklaşık {years} yıldır bir mali müşavirlik ofisinde muhasebe asistanıyım.',
+        developing:'Fatura ve evrak girişlerini yapıyorum; ay sonu yoğunluğunu daha iyi planlamayı öğreniyorum.',
+        solid:'Evrakları tarihine göre takip ediyor, eksikleri kapanıştan önce tamamlıyorum.',
+        strong:'Aylık evrak takip düzenini kurup geciken belge sayısını ciddi ölçüde azalttım.'
+      },
+      {
+        id:'uretim-kalite', primary:'discipline',
+        intro:'Ben {years} yıldır bir üretim tesisinde kalite kontrol bölümünde çalışıyorum.',
+        developing:'Ürün kontrollerini ekip arkadaşlarımla yapıyorum; kayıt tutma hızımı geliştirmeye devam ediyorum.',
+        solid:'Kontrol adımlarını sırayla uyguluyor ve uygunsuz ürünleri zamanında ayırıyorum.',
+        strong:'Kontrol listesindeki eksikleri fark edip sistemi düzenledim; tekrarlanan üretim hataları azaldı.'
+      },
+      {
+        id:'restoran-vardiya', primary:'discipline',
+        intro:'Son {years} yıldır yoğun bir restoranda vardiya ekibindeyim.',
+        developing:'Servis ve hazırlık işlerinde görev alıyorum; yoğun saatlerde tempomu daha iyi yönetmeye çalışıyorum.',
+        solid:'Sipariş, masa ve kapanış işlerini sırayla takip ederek vardiyayı düzenli tamamlıyorum.',
+        strong:'Yoğun saatler için görev dağılımını yenileyip servis aksamalarını azaltan bir düzen kurdum.'
+      },
+      {
+        id:'ofis-idari', primary:'discipline',
+        intro:'Ben {years} yıldır küçük bir şirkette idari işler sorumlusu olarak çalışıyorum.',
+        developing:'Dosyalama ve randevu takibinde görev alıyorum; aynı anda gelen işleri daha iyi önceliklendirmeye çalışıyorum.',
+        solid:'Toplantı, evrak ve ödeme tarihlerini tek takvimden düzenli biçimde takip ediyorum.',
+        strong:'Dağınık takip sistemini tek takvimde birleştirip geciken işlerin önüne geçtim.'
+      },
+      {
+        id:'kargo-sube', primary:'discipline',
+        intro:'Yaklaşık {years} yıldır bir kargo şubesinde operasyon görevlisiyim.',
+        developing:'Paket kabulü ve dağıtım hazırlığında çalışıyorum; işlem hızımı artırmaya odaklanıyorum.',
+        solid:'Gelen ve çıkan paketleri düzenli kontrol edip gün sonu kayıtlarını tamamlıyorum.',
+        strong:'Şube içi ayırma düzenini değiştirerek yanlış yönlendirilen paket sayısını azalttım.'
+      },
+      {
+        id:'eczane-destek', primary:'discipline',
+        intro:'Ben {years} yıldır bir eczanede destek personeli olarak çalışıyorum.',
+        developing:'Raf düzeni ve ürün kabulünde görev alıyorum; stok takibini daha hızlı yapmayı öğreniyorum.',
+        solid:'Son kullanma tarihlerini ve eksilen ürünleri düzenli kontrol ediyorum.',
+        strong:'Raf ve tarih kontrol sistemini yenileyerek eksiklerin daha erken fark edilmesini sağladım.'
+      },
+      {
+        id:'otel-kat', primary:'discipline',
+        intro:'Son {years} yıldır bir otelde kat hizmetleri ekibindeyim.',
+        developing:'Oda hazırlığında çalışıyorum; yoğun günlerde süreyi daha iyi kullanmaya gayret ediyorum.',
+        solid:'Oda listesini sırayla takip edip teslimleri zamanında tamamlıyorum.',
+        strong:'Oda hazırlık planını yeniden düzenleyerek ekipteki gecikmeleri belirgin biçimde azalttım.'
+      },
+      {
+        id:'satinalma-destek', primary:'discipline',
+        intro:'Yaklaşık {years} yıldır bir üretim firmasında satın alma asistanıyım.',
+        developing:'Teklif toplama ve sipariş girişinde çalışıyorum; teslim tarihlerini daha düzenli izlemeye odaklanıyorum.',
+        solid:'Siparişleri ve teslim tarihlerini takip edip gecikmeleri ilgili kişilere önceden bildiriyorum.',
+        strong:'Tedarikçi takip tablosunu sadeleştirerek geciken siparişlerin daha erken görülmesini sağladım.'
+      },
 
-  function el(html){
-    const div = document.createElement('div');
-    div.innerHTML = html.trim();
-    return div.firstChild;
-  }
+      // İletişim odaklı profiller
+      {
+        id:'musteri-hizmetleri', primary:'communication',
+        intro:'Ben {years} yıldır bir çağrı merkezinde müşteri temsilcisiyim.',
+        developing:'Müşteri taleplerini karşılıyorum; zor görüşmelerde daha sakin ve kısa konuşmaya çalışıyorum.',
+        solid:'Şikâyeti dikkatle dinleyip müşteriye uygulanabilir çözümü açık biçimde anlatıyorum.',
+        strong:'Sık gelen şikâyetler için kısa yanıt rehberi hazırlayıp ekibin çözüm süresini düşürdüm.'
+      },
+      {
+        id:'b2b-satis', primary:'communication',
+        intro:'Son {years} yıldır kurumsal müşterilere satış yapıyorum.',
+        developing:'Ürünleri tanıtıyor ve görüşmelere katılıyorum; itirazları yönetme konusunda deneyim kazanıyorum.',
+        solid:'Müşterinin ihtiyacını dinleyip uygun çözümü sade ve net biçimde anlatıyorum.',
+        strong:'Kaybedilmek üzere olan bir müşterinin ihtiyacını doğru anlayıp sözleşmenin yenilenmesini sağladım.'
+      },
+      {
+        id:'resepsiyon', primary:'communication',
+        intro:'Yaklaşık {years} yıldır bir iş merkezinde resepsiyon görevlisiyim.',
+        developing:'Telefon ve ziyaretçi trafiğini karşılıyorum; aynı anda gelen taleplerde daha hızlı yönlendirme yapmayı öğreniyorum.',
+        solid:'Ziyaretçileri doğru kişiye yönlendirip telefon trafiğini sakin biçimde yönetiyorum.',
+        strong:'Sık yaşanan yönlendirme karışıklıkları için kısa bir sistem kurup bekleme süresini azalttım.'
+      },
+      {
+        id:'sosyal-medya', primary:'communication',
+        intro:'Ben {years} yıldır bir markanın sosyal medya hesaplarını yönetiyorum.',
+        developing:'Paylaşım ve yorum takibinde görev alıyorum; kriz anlarında daha hızlı yanıt vermeyi geliştiriyorum.',
+        solid:'Takipçilerle markanın diline uygun, açık ve sakin bir iletişim kuruyorum.',
+        strong:'Olumsuz yorumların arttığı bir dönemde iletişim planı hazırlayıp şikâyetlerin büyümesini önledim.'
+      },
+      {
+        id:'ik-ise-alim', primary:'communication',
+        intro:'Son {years} yıldır insan kaynaklarında işe alım süreçlerine destek veriyorum.',
+        developing:'Adaylarla ilk görüşmeleri yapıyorum; görüşme notlarımı daha kısa ve net tutmaya çalışıyorum.',
+        solid:'Adaylara süreci açık anlatıyor ve görüşme bilgilerini düzenli biçimde aktarıyorum.',
+        strong:'Aday bilgilendirme metinlerini yenileyerek tekrar gelen soruları ve iletişim karışıklığını azalttım.'
+      },
+      {
+        id:'saha-satis', primary:'communication',
+        intro:'Ben {years} yıldır sahada satış temsilcisi olarak çalışıyorum.',
+        developing:'Müşteri ziyaretlerine çıkıyorum; görüşmeleri satışa bağlama konusunda deneyimimi artırıyorum.',
+        solid:'Farklı müşteri tiplerine göre anlatımımı değiştirip güvene dayalı ilişki kuruyorum.',
+        strong:'Uzun süredir çalışılmayan birkaç müşteriyi yeniden kazanıp düzenli sipariş vermelerini sağladım.'
+      },
+      {
+        id:'ziyaretci-iliskileri', primary:'communication',
+        intro:'Yaklaşık {years} yıldır bir kültür merkezinde ziyaretçi ilişkileri görevlisiyim.',
+        developing:'Danışma noktasında soruları yanıtlıyorum; kalabalık grupları daha rahat yönlendirmeye çalışıyorum.',
+        solid:'Farklı yaş gruplarına bilgiyi anlaşılır biçimde aktarıp sorunları sakinlikle çözüyorum.',
+        strong:'Etkinlik günleri için yönlendirme metinleri hazırlayıp ziyaretçi yoğunluğundaki karışıklığı azalttım.'
+      },
+      {
+        id:'egitim-danismani', primary:'communication',
+        intro:'Ben {years} yıldır bir eğitim kurumunda öğrenci danışmanıyım.',
+        developing:'Programlar hakkında bilgi veriyorum; kararsız kişilerle görüşmelerimi daha iyi yapılandırmaya çalışıyorum.',
+        solid:'Kişinin ihtiyacını dinleyip ona uygun programı anlaşılır biçimde açıklıyorum.',
+        strong:'Başvuru sürecini sadeleştiren görüşme akışı hazırlayıp kayıt dönüşlerini artırdım.'
+      },
+      {
+        id:'etkinlik-sorumlusu', primary:'communication',
+        intro:'Son {years} yıldır etkinliklerde katılımcı ilişkileri tarafında çalışıyorum.',
+        developing:'Kayıt ve karşılama süreçlerinde görev alıyorum; kalabalık anlarda daha net yönlendirme yapmaya odaklanıyorum.',
+        solid:'Katılımcıları doğru alana yönlendirip ekipler arasındaki bilgiyi hızlı aktarıyorum.',
+        strong:'Büyük bir etkinlikte iletişim akışını kurup kayıt kuyruğunu ve yanlış yönlendirmeleri azalttım.'
+      },
+      {
+        id:'teknik-destek', primary:'communication',
+        intro:'Yaklaşık {years} yıldır bir yazılım firmasında teknik destek veriyorum.',
+        developing:'Temel kullanıcı sorunlarını çözüyorum; teknik konuları daha sade anlatmaya çalışıyorum.',
+        solid:'Sorunu adım adım dinleyip kullanıcıya anlaşılır bir çözüm sunuyorum.',
+        strong:'En sık yaşanan sorunlar için kısa anlatımlar hazırlayıp destek taleplerinin tekrarını azalttım.'
+      },
 
-  function render(){
-    const root = document.getElementById('app');
-    root.innerHTML = '';
-    root.appendChild(screens[state.screen]());
-  }
+      // Uyum ve öğrenme odaklı profiller
+      {
+        id:'etkinlik-operasyon', primary:'adaptability',
+        intro:'Ben {years} yıldır etkinlik operasyonlarında çalışıyorum.',
+        developing:'Kurulum ve kayıt süreçlerinde görev alıyorum; son dakika değişikliklerinde daha hızlı karar vermeyi öğreniyorum.',
+        solid:'Program değiştiğinde görevleri hızla yeniden düzenleyip ekibe uyum sağlıyorum.',
+        strong:'Konuşmacı iptali yaşanan bir etkinlikte programı kısa sürede yenileyip akışın bozulmasını önledim.'
+      },
+      {
+        id:'otel-onburo', primary:'adaptability',
+        intro:'Son {years} yıldır bir otelin ön büro ekibindeyim.',
+        developing:'Giriş ve rezervasyon işlemlerini yapıyorum; beklenmedik taleplerde daha hızlı çözüm üretmeye çalışıyorum.',
+        solid:'Rezervasyon değişikliklerine ve farklı misafir ihtiyaçlarına hızlı biçimde uyum sağlıyorum.',
+        strong:'Sistem arızası sırasında geçici kayıt düzeni kurup misafir girişlerinin aksamamasını sağladım.'
+      },
+      {
+        id:'girisim-operasyon', primary:'adaptability',
+        intro:'Yaklaşık {years} yıldır küçük bir girişimde operasyon tarafında çalışıyorum.',
+        developing:'Farklı işlere destek oluyorum; sık değişen önceliklere alışma konusunda kendimi geliştiriyorum.',
+        solid:'İhtiyaca göre müşteri, sipariş ve içerik işlerine hızlıca geçiş yapabiliyorum.',
+        strong:'Ekip küçüldüğünde yeni görevleri kısa sürede öğrenip operasyonun devam etmesini sağladım.'
+      },
+      {
+        id:'eticaret-katalog', primary:'adaptability',
+        intro:'Ben {years} yıldır bir e-ticaret sitesinde ürün içerikleriyle ilgileniyorum.',
+        developing:'Ürün girişleri yapıyorum; yeni panel ve kurallara daha hızlı alışmaya çalışıyorum.',
+        solid:'Kategori kuralları değiştiğinde sistemi kısa sürede öğrenip içerikleri uyarlıyorum.',
+        strong:'Yeni panele geçişte süreci hızla öğrenip ekip arkadaşlarına kısa bir kullanım rehberi hazırladım.'
+      },
+      {
+        id:'lojistik-sevk', primary:'adaptability',
+        intro:'Son {years} yıldır bir lojistik firmasında sevk planlama ekibindeyim.',
+        developing:'Araç ve teslimat takibinde çalışıyorum; ani değişikliklerde alternatif üretme pratiği kazanıyorum.',
+        solid:'Araç veya rota değiştiğinde teslimat planını hızlıca güncelliyorum.',
+        strong:'Araç arızası yaşanan yoğun bir günde rotaları yeniden kurup teslimatların büyük bölümünü zamanında tamamladım.'
+      },
+      {
+        id:'saha-arastirma', primary:'adaptability',
+        intro:'Ben {years} yıldır saha araştırmalarında anketörlük yapıyorum.',
+        developing:'Farklı bölgelerde görüşme yapıyorum; katılımcı bulmak zorlaştığında yeni yöntemler deniyorum.',
+        solid:'Farklı insanlara ve saha koşullarına göre iletişim biçimimi hızla değiştirebiliyorum.',
+        strong:'Katılımın düşük kaldığı bir sahada yaklaşımı değiştirip hedef görüşme sayısına ulaşılmasını sağladım.'
+      },
+      {
+        id:'bilgi-islem-destek', primary:'adaptability',
+        intro:'Yaklaşık {years} yıldır bir kurumda bilgi işlem desteği veriyorum.',
+        developing:'Cihaz kurulumu ve temel sorunlarla ilgileniyorum; yeni sistemleri daha hızlı öğrenmeye çalışıyorum.',
+        solid:'Kullanılan program değiştiğinde kısa sürede öğrenip günlük sorunları çözebiliyorum.',
+        strong:'Yeni sisteme geçişte sorunları hızla öğrenip çalışanların uyum sağlamasına destek oldum.'
+      },
+      {
+        id:'uretim-planlama', primary:'adaptability',
+        intro:'Ben {years} yıldır üretim planlama ekibinde çalışıyorum.',
+        developing:'Günlük planları takip ediyorum; malzeme gecikmelerinde alternatif plan kurma deneyimi kazanıyorum.',
+        solid:'Sipariş veya malzeme durumu değiştiğinde günlük üretim sırasını hızlıca güncelliyorum.',
+        strong:'Kritik bir malzeme gecikmesinde üretim sırasını değiştirip teslim tarihinin korunmasını sağladım.'
+      },
+      {
+        id:'stk-koordinator', primary:'adaptability',
+        intro:'Son {years} yıldır bir sivil toplum kuruluşunda proje koordinasyonunda çalışıyorum.',
+        developing:'Gönüllü ve saha işlerine destek oluyorum; değişen koşullarda planımı daha hızlı yenilemeye çalışıyorum.',
+        solid:'Gönüllü sayısı ve saha ihtiyacı değiştiğinde görev planını hızlıca uyarlıyorum.',
+        strong:'Etkinlik günü yaşanan ekip eksikliğinde görevleri yeniden dağıtıp programın devam etmesini sağladım.'
+      },
+      {
+        id:'kafe-barista', primary:'adaptability',
+        intro:'Ben {years} yıldır yoğun bir kafede barista olarak çalışıyorum.',
+        developing:'İçecek hazırlıyor ve kasaya destek oluyorum; yoğunluk değiştiğinde tempomu ayarlamaya çalışıyorum.',
+        solid:'Sipariş yoğunluğuna göre kasa, hazırlık ve servis arasında hızlıca geçiş yapıyorum.',
+        strong:'Yoğun saatlerde çalışma düzenini değiştirip siparişlerin daha hızlı çıkmasını sağladım.'
+      },
 
-  function progressBar(activeIdx, total){
-    let dots = '';
-    for(let i=0;i<total;i++){
-      const cls = i < activeIdx ? 'done' : (i === activeIdx ? 'current' : '');
-      dots += `<div class="dot ${cls}"></div>`;
-    }
-    return `<div class="progress">${dots}</div>`;
-  }
+      // Analitik düşünme odaklı profiller
+      {
+        id:'pazar-arastirma', primary:'analysis',
+        intro:'Ben {years} yıldır pazar araştırması projelerinde çalışıyorum.',
+        developing:'Anket sonuçlarını düzenliyorum; bulguları yorumlama konusunda daha fazla deneyim kazanıyorum.',
+        solid:'Müşteri yorumlarını gruplandırıp tekrar eden ihtiyaçları ortaya çıkarıyorum.',
+        strong:'Araştırma verilerinden gözden kaçan bir müşteri grubunu belirleyip kampanya kararını etkiledim.'
+      },
+      {
+        id:'stok-kontrol', primary:'analysis',
+        intro:'Son {years} yıldır bir perakende şirketinde stok kontrolü yapıyorum.',
+        developing:'Sayım sonuçlarını karşılaştırıyorum; farkların nedenini bulma konusunda kendimi geliştiriyorum.',
+        solid:'Stok farklarını ürün ve mağaza bazında inceleyip sorunun kaynağını buluyorum.',
+        strong:'Tekrarlanan stok farklarının ortak nedenini tespit edip sayım hatalarının azalmasını sağladım.'
+      },
+      {
+        id:'butce-raporlama', primary:'analysis',
+        intro:'Yaklaşık {years} yıldır bir şirkette bütçe ve raporlama tarafında çalışıyorum.',
+        developing:'Gider tablolarını hazırlıyorum; sapmaları yorumlama konusunda daha çok pratik yapıyorum.',
+        solid:'Gerçekleşen giderleri bütçeyle karşılaştırıp önemli sapmaları erkenden bildiriyorum.',
+        strong:'Giderlerdeki düzenli artışı erken fark edip beklenmeyen maliyetin büyümesini önledim.'
+      },
+      {
+        id:'dijital-pazarlama', primary:'analysis',
+        intro:'Ben {years} yıldır dijital reklam kampanyalarıyla ilgileniyorum.',
+        developing:'Kampanya sonuçlarını takip ediyorum; hangi verinin önemli olduğunu ayırma konusunda gelişiyorum.',
+        solid:'Tıklama ve dönüşüm sonuçlarını karşılaştırıp bütçenin daha verimli kullanılmasına destek oluyorum.',
+        strong:'Düşük performanslı hedef kitleyi tespit edip bütçeyi daha iyi sonuç veren gruba yönlendirdim.'
+      },
+      {
+        id:'laboratuvar-kalite', primary:'analysis',
+        intro:'Son {years} yıldır bir laboratuvarda kalite kayıtlarıyla çalışıyorum.',
+        developing:'Ölçüm sonuçlarını kaydediyorum; sıra dışı değerleri yorumlama konusunda deneyim kazanıyorum.',
+        solid:'Sonuçları geçmiş ölçümlerle karşılaştırıp şüpheli değerleri tekrar kontrol ediyorum.',
+        strong:'Tekrarlanan ölçüm sapmasının cihaz ayarından kaynaklandığını fark edip hatalı sonuçların önüne geçtim.'
+      },
+      {
+        id:'urun-operasyon', primary:'analysis',
+        intro:'Ben {years} yıldır bir mobil uygulamanın ürün operasyonunda çalışıyorum.',
+        developing:'Kullanıcı geri bildirimlerini topluyorum; önceliklendirme konusunda daha fazla deneyim kazanıyorum.',
+        solid:'Şikâyetleri kullanım adımlarına göre ayırıp en sık yaşanan sorunu belirliyorum.',
+        strong:'Kullanıcıların en çok terk ettiği adımı tespit edip yapılan iyileştirmenin kullanım oranını artırmasına katkı sağladım.'
+      },
+      {
+        id:'talep-planlama', primary:'analysis',
+        intro:'Yaklaşık {years} yıldır talep planlama ekibinde çalışıyorum.',
+        developing:'Geçmiş satışları takip ediyorum; tahmin hatalarını yorumlama konusunda kendimi geliştiriyorum.',
+        solid:'Satış değişimlerini ürün bazında inceleyip sipariş planına destek oluyorum.',
+        strong:'Sezon etkisini yanlış değerlendiren ürün grubunu fark edip tahmin hatasının azalmasını sağladım.'
+      },
+      {
+        id:'surec-gelistirme', primary:'analysis',
+        intro:'Ben {years} yıldır operasyon süreçlerini iyileştiren projelerde çalışıyorum.',
+        developing:'İş adımlarını çıkarıyorum; zaman kaybının nedenlerini daha net analiz etmeye çalışıyorum.',
+        solid:'Süreci adım adım inceleyip işin nerede beklediğini ortaya çıkarıyorum.',
+        strong:'Onay sürecindeki gereksiz adımı tespit edip işlerin tamamlanma süresini kısalttım.'
+      },
+      {
+        id:'raporlama-asistani', primary:'analysis',
+        intro:'Son {years} yıldır bir satış ekibinde raporlama asistanıyım.',
+        developing:'Günlük verileri düzenliyorum; raporlardaki farkları yorumlama konusunda ilerliyorum.',
+        solid:'Satış sonuçlarını bölge ve ürün bazında karşılaştırıp dikkat çeken değişimleri bildiriyorum.',
+        strong:'Raporlarda görünmeyen bölgesel düşüşü fark edip sorunun erken araştırılmasını sağladım.'
+      },
+      {
+        id:'musteri-deneyimi', primary:'analysis',
+        intro:'Ben {years} yıldır müşteri deneyimi ekibinde çalışıyorum.',
+        developing:'Anket ve şikâyet kayıtlarını inceliyorum; sonuçları daha net yorumlamaya çalışıyorum.',
+        solid:'Şikâyetleri konu ve aşamaya göre ayırıp en sık sorun yaşanan noktayı buluyorum.',
+        strong:'Müşteri kaybının belirli bir işlemden sonra arttığını tespit edip sürecin değiştirilmesine katkı sağladım.'
+      }
+    ];
 
-  const screens = {};
+    const GOOGLE_FORM_ID = '1FAIpQLSdvBLXr7N_LaCpGuaLNcT0YHKwAvNJJ0WbA_8YhVLu2eg7Y0w';
+    const GOOGLE_FORM_VIEW = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/viewform`;
 
-  screens.welcome = function(){
-    const wrap = el(`
-      <div>
-        <div class="eyebrow">Ankara Üniversitesi · İstatistik Araştırması</div>
-        <h1>Şans Doygunluğu Problemi</h1>
-        <div class="card stack">
-          <p style="margin-bottom:0">Sana sırayla adaylar (iş adayı gibi düşün) gösterilecek. Her adayda "geç" ya da "bu adayı seç ve dur" diyeceksin — durduğunda geri dönemiyorsun. Amaç, karşına çıkanlar arasından <b>en iyisini</b> yakalamak.</p>
-        </div>
-        <div style="height:14px"></div>
-        <div class="card stack">
-          <p style="margin-bottom:0; font-size:13px;">Kimlik bilgisi toplanmıyor, ~2 dakika sürüyor. Cevapların bir istatistik araştırmasında anonim olarak kullanılacak.</p>
-        </div>
-        <div style="height:20px"></div>
-        <button class="btn btn-primary" id="start">Başla</button>
-      </div>
-    `);
-    wrap.querySelector('#start').onclick = () => { state.screen = 'demo'; render(); };
-    return wrap;
-  };
+    // Apps Script'i web uygulaması olarak yayımladıktan sonra /exec adresini buraya yapıştır.
+    const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMCsArqwi50P02nJ_x6oEjtBC15k75-9R50A2zV3eq4Sdn-ARix2wjHy_XT0r4Jvqm/exec';
 
-  screens.demo = function(){
-    const wrap = el(`
-      <div>
-        ${progressBar(0, TOTAL_SCREENS)}
-        <h2>Birkaç kısa soru</h2>
-        <p>Sonuçları yorumlarken işimize yarayacak.</p>
-        <div class="card stack">
-          <div class="field">
-            <label>Bölümün</label>
-            <input type="text" id="bolum" placeholder="ör. İstatistik" value="${state.demo.bolum}">
-          </div>
-          <div class="field">
-            <label>Kaçıncı sınıf</label>
-            <div class="choice-row" id="sinifRow">
-              ${['1','2','3','4','Mezun'].map(s => `<div class="choice ${state.demo.sinif===s?'active':''}" data-v="${s}">${s}</div>`).join('')}
-            </div>
-          </div>
-          <div class="field">
-            <label>Olasılık/istatistik dersi aldın mı?</label>
-            <div class="choice-row" id="dersRow">
-              ${['Evet','Hayır'].map(s => `<div class="choice ${state.demo.ders===s?'active':''}" data-v="${s}">${s}</div>`).join('')}
-            </div>
-          </div>
-        </div>
-        <div style="height:20px"></div>
-        <button class="btn btn-primary" id="next">Devam Et</button>
-      </div>
-    `);
-    wrap.querySelector('#bolum').oninput = (e) => { state.demo.bolum = e.target.value; };
-    wrap.querySelectorAll('#sinifRow .choice').forEach(c => c.onclick = () => {
-      state.demo.sinif = c.dataset.v; render();
-    });
-    wrap.querySelectorAll('#dersRow .choice').forEach(c => c.onclick = () => {
-      state.demo.ders = c.dataset.v; render();
-    });
-    wrap.querySelector('#next').onclick = () => { state.screen = 'instructions'; render(); };
-    return wrap;
-  };
+    const ENTRY = {
+      bolum: 'entry.1942593130',
+      sinif: 'entry.1374702133',
+      ders: 'entry.666989072',
+      n5dur: 'entry.75216222',
+      n5iyi: 'entry.885061787',
+      n12dur: 'entry.227200009',
+      n12iyi: 'entry.1274098599',
+      n20dur: 'entry.2092638518',
+      n20iyi: 'entry.1446373079',
 
-  screens.instructions = function(){
-    const wrap = el(`
-      <div>
-        ${progressBar(1, TOTAL_SCREENS)}
-        <h2>Kurallar</h2>
-        <div class="card stack">
-          <p style="margin-bottom:10px">• Adaylar sırayla, tek tek gösterilecek.</p>
-          <p style="margin-bottom:10px">• Her adayda, o ana kadar gördüklerin arasında <b>en iyisi olup olmadığını</b> göreceksin — ama sırada kim var bilemiyorsun.</p>
-          <p style="margin-bottom:10px">• "Geç" dersen bir daha o adaya dönemezsin.</p>
-          <p style="margin-bottom:0">• "Bu adayı seç, dur" dersen o an oyun biter ve gerçekten en iyisini seçip seçmediğini göreceksin.</p>
-        </div>
-        <div style="height:20px"></div>
-        <button class="btn btn-primary" id="go">Anladım, başlayalım</button>
-      </div>
-    `);
-    wrap.querySelector('#go').onclick = () => {
-      state.trial = newTrial(state.order[0]);
-      state.screen = 'trial';
-      render();
+      // Google Form'a “Deney ayrıntıları (JSON)” adlı uzun yanıt sorusu
+      // ekledikten sonra buraya onun entry numarasını yazacağız.
+      // Boş bırakıldığında mevcut alanlar yine otomatik gönderilir.
+      detay: ''
     };
-    return wrap;
-  };
 
-  screens.trial = function(){
-    const t = state.trial;
-    const idx = t.pos; // 0-based index of current candidate
-    const val = t.values[idx];
-    const isBest = val > t.seenMax;
-    const isLast = idx === t.n - 1;
+    let state = createInitialState();
 
-    const wrap = el(`
-      <div>
-        ${progressBar(2 + state.trialIndex, TOTAL_SCREENS)}
-        <div class="n-badge">Tur ${state.trialIndex + 1} / ${N_VALUES.length} · n = ${t.n}</div>
-        <div class="ticket">
-          <div class="ticket-tab">
-            <span>ADAY DOSYASI</span>
-            <span>${idx + 1} / ${t.n}</span>
-          </div>
-          <div class="ticket-body">
-            <div class="ticket-num">${idx + 1}</div>
-            <div class="ticket-sub">şu ana kadar gördüğün ${idx + 1}. aday</div>
-            <div class="tag ${isBest ? 'best' : 'notbest'}">${isBest ? '★ Şimdiye kadarkilerin en iyisi' : 'Şimdiye kadarkilerin en iyisi değil'}</div>
-          </div>
-        </div>
-        ${isLast ? '<div class="note-forced">Bu son aday — birini seçmek zorundasın.</div>' : ''}
-        <div class="actions">
-          ${!isLast ? '<button class="btn btn-ghost" id="pass">Geç, sıradakine bak →</button>' : ''}
-          <button class="btn btn-stop" id="stop">${isLast ? 'Bu Adayı Seç (Son Şansın)' : 'Bu Adayı Seç ve Dur'}</button>
-        </div>
-      </div>
-    `);
-
-    if(!isLast){
-      wrap.querySelector('#pass').onclick = () => {
-        t.seenMax = Math.max(t.seenMax, val);
-        t.pos += 1;
-        render();
+    function createInitialState(){
+      return {
+        screen: 'welcome',
+        demo: {bolum:'', sinif:'', ders:''},
+        order: shuffle(N_VALUES.slice()),
+        trialIndex: 0,
+        trial: null,
+        trialResults: [],
+        sessionId: createSessionId(),
+        startedAt: Date.now(),
+        saveStatus: 'idle',
+        saveError: ''
       };
     }
-    wrap.querySelector('#stop').onclick = () => {
-      const success = (idx === t.bestIndex);
-      state.trialResults.push({
-        n: t.n,
-        stopPosition: idx + 1,
-        success,
-        trueBestPosition: t.bestIndex + 1
-      });
-      state.screen = 'trialResult';
-      render();
-    };
-    return wrap;
-  };
 
-  screens.trialResult = function(){
-    const r = state.trialResults[state.trialResults.length - 1];
-    const isLastTrial = state.trialIndex === N_VALUES.length - 1;
-    const wrap = el(`
-      <div>
-        ${progressBar(2 + state.trialIndex, TOTAL_SCREENS)}
-        <div class="result-badge ${r.success ? 'win' : 'lose'}">
-          <div class="big">${r.success ? 'En iyisini yakaladın 🎯' : 'Bu sefer olmadı'}</div>
-          <p style="margin:0; font-size:13px;">${r.success ? `${r.stopPosition}. adayda durdun ve gerçekten en iyisi oymuş.` : `${r.stopPosition}. adayda durdun. Gerçek en iyi aday ${r.trueBestPosition}. sıradaymış.`}</p>
-        </div>
-        <button class="btn btn-primary" id="cont">${isLastTrial ? 'Bitir' : 'Sıradaki Tura Geç'}</button>
-      </div>
-    `);
-    wrap.querySelector('#cont').onclick = () => {
-      if(isLastTrial){
-        state.screen = 'done';
-      } else {
-        state.trialIndex += 1;
-        state.trial = newTrial(state.order[state.trialIndex]);
-        state.screen = 'trial';
+    function createSessionId(){
+      if(window.crypto && typeof window.crypto.randomUUID === 'function'){
+        return window.crypto.randomUUID();
       }
+      return `sd-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
+    }
+
+    function shuffle(arr){
+      for(let i=arr.length-1; i>0; i--){
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function clamp(value,min,max){
+      return Math.max(min,Math.min(max,value));
+    }
+
+    function randomCentered(){
+      return Math.random()+Math.random()+Math.random()-1.5;
+    }
+
+    function scoreBand(score){
+      if(score>=86) return 'exceptional';
+      if(score>=77) return 'strong';
+      if(score>=68) return 'solid';
+      if(score>=59) return 'developing';
+      return 'early';
+    }
+
+    function strongestCompetencyKey(profile){
+      return COMPETENCIES
+        .map(item=>({key:item.key,score:profile.competencyScores[item.key]}))
+        .sort((a,b)=>b.score-a.score)[0].key;
+    }
+
+    function candidateStoryLevel(profile,isBest){
+      if(isBest || profile.overallScore>=84) return 'strong';
+      if(profile.overallScore>=66) return 'solid';
+      return 'developing';
+    }
+
+    function fillStoryTemplate(text,profile){
+      return text.replaceAll('{years}',String(profile.experienceYears));
+    }
+
+    function selectStoryTemplate(profile,availableTemplates){
+      const strongest=strongestCompetencyKey(profile);
+      let index=availableTemplates.findIndex(item=>item.primary===strongest);
+      if(index<0) index=0;
+      return availableTemplates.splice(index,1)[0];
+    }
+
+    function createCandidateStory(profile,template,isBest){
+      const level=candidateStoryLevel(profile,isBest);
+      const intro=fillStoryTemplate(template.intro,profile);
+      const detail=fillStoryTemplate(template[level],profile);
+      return `${intro} ${detail}`;
+    }
+
+    function createCandidateProfile(position,trialSize){
+      const base=48+Math.random()*43;
+      const standoutIndex=Math.floor(Math.random()*COMPETENCIES.length);
+      let developmentIndex=Math.floor(Math.random()*COMPETENCIES.length);
+      while(developmentIndex===standoutIndex){
+        developmentIndex=Math.floor(Math.random()*COMPETENCIES.length);
+      }
+
+      const competencyScores={};
+      COMPETENCIES.forEach((item,index)=>{
+        let modifier=randomCentered()*14;
+        if(index===standoutIndex) modifier+=7;
+        if(index===developmentIndex) modifier-=7;
+        competencyScores[item.key]=clamp(Math.round(base+modifier),38,98);
+      });
+
+      const overallScore=COMPETENCIES.reduce(
+        (sum,item)=>sum+competencyScores[item.key]*item.weight,
+        0
+      );
+
+      const experienceYears=clamp(
+        Math.round(1+(overallScore-45)/8+randomCentered()),
+        1,
+        8
+      );
+
+      return {
+        id:String(position+1).padStart(2,'0'),
+        experienceYears,
+        competencyScores,
+        overallScore:Number(overallScore.toFixed(4)),
+        storyline:''
+      };
+    }
+
+    function renderCompetencies(profile){
+      return COMPETENCIES.map(item=>{
+        const score=profile.competencyScores[item.key];
+        return `
+          <div class="competency-item">
+            <div class="competency-head">
+              <span class="competency-name">${item.label}</span>
+              <span class="competency-value">${score}/100</span>
+            </div>
+            <div class="competency-track" aria-label="${item.label}: ${score} üzerinden 100">
+              <div class="competency-fill" style="width:${score}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function newTrial(n){
+      let profiles;
+      let values;
+      let bestIndex;
+
+      // Her turda yalnızca bir gerçek en iyi aday olmasını sağla.
+      // En yüksek birleşik puan eşitse aday havuzu baştan üretilir.
+      do {
+        profiles=Array.from({length:n},(_,index)=>createCandidateProfile(index,n));
+        values=profiles.map(profile=>profile.overallScore);
+        const maxScore=Math.max(...values);
+        const topIndexes=values
+          .map((value,index)=>value===maxScore?index:-1)
+          .filter(index=>index!==-1);
+        bestIndex=topIndexes.length===1?topIndexes[0]:-1;
+      } while(bestIndex===-1);
+
+      const availableTemplates=shuffle(CANDIDATE_STORIES.slice());
+      profiles.forEach((profile,index)=>{
+        const template=selectStoryTemplate(profile,availableTemplates);
+        profile.storyTemplate=template.id;
+        profile.storyline=createCandidateStory(profile,template,index===bestIndex);
+      });
+      return {
+        n,
+        profiles,
+        values,
+        bestIndex,
+        pos:0,
+        seenMax:-Infinity,
+        startedAt:Date.now(),
+        actions:[]
+      };
+    }
+
+    function el(html){
+      const div = document.createElement('div');
+      div.innerHTML = html.trim();
+      return div.firstChild;
+    }
+
+    function escapeHtml(value){
+      return String(value)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    function render(){
+      const root = document.getElementById('app');
+      root.innerHTML = '';
+      root.appendChild(screens[state.screen]());
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function progressBar(activeIdx,total){
+      let dots='';
+      for(let i=0; i<total; i++){
+        const cls = i < activeIdx ? 'done' : (i === activeIdx ? 'current' : '');
+        dots += `<div class="dot ${cls}"></div>`;
+      }
+      return `<div class="progress">${dots}</div>`;
+    }
+
+    function validateDemo(){
+      const errors=[];
+      state.demo.bolum = state.demo.bolum.trim().replace(/\s+/g,' ');
+
+      if(state.demo.bolum.length < 2) errors.push('Bölümünü yazmalısın.');
+      if(!state.demo.sinif) errors.push('Sınıfını seçmelisin.');
+      if(!state.demo.ders) errors.push('Ders sorusunu cevaplamalısın.');
+
+      return errors;
+    }
+
+    function isRunningBest(values,index){
+      if(index === 0) return true;
+      return values[index] > Math.max(...values.slice(0,index));
+    }
+
+    function roundedValues(values){
+      return values.map(v => Number(v.toFixed(6)));
+    }
+
+    function buildDetailedPayload(){
+      const endedAt = Date.now();
+      return {
+        schemaVersion:1,
+        sessionId:state.sessionId,
+        startedAt:new Date(state.startedAt).toISOString(),
+        endedAt:new Date(endedAt).toISOString(),
+        totalDurationMs:endedAt-state.startedAt,
+        trialOrder:state.order,
+        demographics:{...state.demo},
+        trials:state.trialResults.map(r => ({
+          n:r.n,
+          stopPosition:r.stopPosition,
+          success:r.success,
+          trueBestPosition:r.trueBestPosition,
+          selectedScore:r.selectedScore,
+          bestScore:r.bestScore,
+          trialDurationMs:r.trialDurationMs,
+          values:r.values,
+          profiles:r.profiles,
+          runningBestPositions:r.runningBestPositions,
+          actions:r.actions
+        }))
+      };
+    }
+
+    function buildFormParams(){
+      const byN={};
+      state.trialResults.forEach(r => {byN[r.n]=r;});
+      const params = new URLSearchParams();
+
+      params.append(ENTRY.bolum,state.demo.bolum);
+      params.append(ENTRY.sinif,state.demo.sinif);
+      params.append(ENTRY.ders,state.demo.ders);
+      params.append(ENTRY.n5dur,byN[5] ? String(byN[5].stopPosition) : '');
+      params.append(ENTRY.n5iyi,byN[5] ? (byN[5].success ? 'Evet' : 'Hayır') : '');
+      params.append(ENTRY.n12dur,byN[12] ? String(byN[12].stopPosition) : '');
+      params.append(ENTRY.n12iyi,byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '');
+      params.append(ENTRY.n20dur,byN[20] ? String(byN[20].stopPosition) : '');
+      params.append(ENTRY.n20iyi,byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : '');
+
+      if(ENTRY.detay){
+        params.append(ENTRY.detay,JSON.stringify(buildDetailedPayload()));
+      }
+
+      return params;
+    }
+
+    function buildPrefilledUrl(){
+      const params = buildFormParams();
+      params.set('usp','pp_url');
+      return `${GOOGLE_FORM_VIEW}?${params.toString()}`;
+    }
+
+    function buildBridgeParams(callbackName){
+      const byN={};
+      state.trialResults.forEach(r => {byN[r.n]=r;});
+
+      return new URLSearchParams({
+        callback:callbackName,
+        bolum:state.demo.bolum,
+        sinif:state.demo.sinif,
+        ders:state.demo.ders,
+        n5dur:byN[5] ? String(byN[5].stopPosition) : '',
+        n5iyi:byN[5] ? (byN[5].success ? 'Evet' : 'Hayır') : '',
+        n12dur:byN[12] ? String(byN[12].stopPosition) : '',
+        n12iyi:byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '',
+        n20dur:byN[20] ? String(byN[20].stopPosition) : '',
+        n20iyi:byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : ''
+      });
+    }
+
+    function submitResults(){
+      if(state.saveStatus === 'saving' || state.saveStatus === 'success') return;
+
+      if(!GOOGLE_APPS_SCRIPT_URL || !GOOGLE_APPS_SCRIPT_URL.includes('/exec')){
+        state.saveStatus='error';
+        state.saveError='Otomatik gönderim bağlantısı henüz ayarlanmadı.';
+        render();
+        return;
+      }
+
+      if(!navigator.onLine){
+        state.saveStatus='error';
+        state.saveError='İnternet bağlantısı görünmüyor.';
+        render();
+        return;
+      }
+
+      state.saveStatus='saving';
+      state.saveError='';
       render();
-    };
-    return wrap;
-  };
 
-  screens.done = function(){
-    const url = buildPrefilledUrl();
-    const wrap = el(`
-      <div>
-        <div class="eyebrow">Son bir adım kaldı</div>
-        <h1>Kaydı tamamla</h1>
-        <div class="card">
-          <p style="margin-bottom:0">Cevaplarını kaydetmek için aşağıdaki butona bas, açılan sayfada da <b>"Gönder"</b> butonuna bas. Bu adım olmadan cevapların kaydedilmiyor.</p>
+      const callbackName=`__sansDoygunlugu_${state.sessionId.replace(/[^a-zA-Z0-9_$]/g,'')}`;
+      const script=document.createElement('script');
+      let finished=false;
+      let timeoutId;
+
+      function cleanup(){
+        window.clearTimeout(timeoutId);
+        script.remove();
+        try{ delete window[callbackName]; }catch(error){ window[callbackName]=undefined; }
+      }
+
+      function finish(status,message=''){
+        if(finished) return;
+        finished=true;
+        cleanup();
+        state.saveStatus=status;
+        state.saveError=message;
+        render();
+      }
+
+      window[callbackName]=(result)=>{
+        if(result && result.ok === true){
+          finish('success');
+          return;
+        }
+        const message=result && result.error
+          ? String(result.error)
+          : 'Google Form yanıtı kaydedemedi.';
+        finish('error',message);
+      };
+
+      script.async=true;
+      script.src=`${GOOGLE_APPS_SCRIPT_URL}?${buildBridgeParams(callbackName).toString()}`;
+      script.onerror=()=>{
+        finish('error','Google Apps Script bağlantısına ulaşılamadı.');
+      };
+
+      timeoutId=window.setTimeout(()=>{
+        finish('error','Google Form zamanında yanıt vermedi. Lütfen tekrar dene.');
+      },20000);
+
+      document.head.appendChild(script);
+    }
+
+    const screens={};
+
+    screens.welcome=function(){
+      const wrap=el(`
+        <div>
+          <div class="eyebrow">Ankara Üniversitesi · İstatistik Araştırması</div>
+          <h1>Şans Doygunluğu Problemi</h1>
+          <div class="card stack">
+            <p style="margin-bottom:0">Sana sırayla anonim iş adayları gösterilecek. Her adayın disiplin, iletişim, uyum ve öğrenme ile analitik düşünme puanlarını; deneyim süresini ve adayın kendi ağzından kısa tanıtımını göreceksin. Her adayda “geç” ya da “bu adayı seç ve dur” diyeceksin — durduğunda geri dönemiyorsun. Amaç, karşına çıkanlar arasından <b>en iyisini</b> yakalamak.</p>
+          </div>
+          <div style="height:14px"></div>
+          <div class="card stack">
+            <p style="margin-bottom:0;font-size:13px">Kimlik bilgisi toplanmıyor, yaklaşık 2 dakika sürüyor. Cevapların bir istatistik araştırmasında anonim olarak kullanılacak.</p>
+          </div>
+          <div style="height:20px"></div>
+          <button class="btn btn-primary" id="start">Başla</button>
         </div>
-        <div style="height:16px"></div>
-        <a class="btn btn-stop" style="display:block; text-align:center; text-decoration:none;" href="${url}" target="_blank" rel="noopener">Cevaplarımı Kaydet →</a>
-      </div>
-    `);
-    return wrap;
-  };
+      `);
 
-  // Google Form arka-plan gönderim ayarları
-  const GOOGLE_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSdvBLXr7N_LaCpGuaLNcT0YHKwAvNJJ0WbA_8YhVLu2eg7Y0w/formResponse';
-  const ENTRY = {
-    bolum: 'entry.1942593130',
-    sinif: 'entry.1374702133',
-    ders: 'entry.666989072',
-    n5dur: 'entry.75216222',
-    n5iyi: 'entry.885061787',
-    n12dur: 'entry.227200009',
-    n12iyi: 'entry.1274098599',
-    n20dur: 'entry.2092638518',
-    n20iyi: 'entry.1446373079'
-  };
+      wrap.querySelector('#start').onclick=()=>{
+        state.startedAt=Date.now();
+        state.screen='demo';
+        render();
+      };
+      return wrap;
+    };
 
-  function buildPrefilledUrl(){
-    const byN = {};
-    state.trialResults.forEach(r => { byN[r.n] = r; });
+    screens.demo=function(){
+      const wrap=el(`
+        <div>
+          ${progressBar(0,TOTAL_SCREENS)}
+          <h2>Birkaç kısa soru</h2>
+          <p>Sonuçları yorumlarken işimize yarayacak.</p>
+          <div class="card stack">
+            <div class="field">
+              <label for="bolum">Bölümün</label>
+              <input type="text" id="bolum" maxlength="80" autocomplete="organization-title" placeholder="ör. İstatistik" value="${escapeHtml(state.demo.bolum)}">
+            </div>
+            <div class="field">
+              <label>Kaçıncı sınıf</label>
+              <div class="choice-row" id="sinifRow">
+                ${['1','2','3','4','Mezun'].map(s=>`<div class="choice ${state.demo.sinif===s?'active':''}" data-v="${s}" role="button" tabindex="0">${s}</div>`).join('')}
+              </div>
+            </div>
+            <div class="field">
+              <label>Olasılık/istatistik dersi aldın mı?</label>
+              <div class="choice-row" id="dersRow">
+                ${['Evet','Hayır'].map(s=>`<div class="choice ${state.demo.ders===s?'active':''}" data-v="${s}" role="button" tabindex="0">${s}</div>`).join('')}
+              </div>
+            </div>
+            <div class="error-box" id="demoError" aria-live="polite"></div>
+          </div>
+          <div style="height:20px"></div>
+          <button class="btn btn-primary" id="next">Devam Et</button>
+        </div>
+      `);
 
-    const base = 'https://docs.google.com/forms/d/e/1FAIpQLSdvBLXr7N_LaCpGuaLNcT0YHKwAvNJJ0WbA_8YhVLu2eg7Y0w/viewform';
-    const params = new URLSearchParams();
-    params.append('usp', 'pp_url');
-    params.append(ENTRY.bolum, state.demo.bolum || '');
-    params.append(ENTRY.sinif, state.demo.sinif || '');
-    params.append(ENTRY.ders, state.demo.ders || '');
-    params.append(ENTRY.n5dur, byN[5] ? String(byN[5].stopPosition) : '');
-    params.append(ENTRY.n5iyi, byN[5] ? (byN[5].success ? 'Evet' : 'Hayır') : '');
-    params.append(ENTRY.n12dur, byN[12] ? String(byN[12].stopPosition) : '');
-    params.append(ENTRY.n12iyi, byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '');
-    params.append(ENTRY.n20dur, byN[20] ? String(byN[20].stopPosition) : '');
-    params.append(ENTRY.n20iyi, byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : '');
-    return base + '?' + params.toString();
-  }
+      const input=wrap.querySelector('#bolum');
+      input.oninput=e=>{state.demo.bolum=e.target.value;};
 
+      function bindChoices(selector,key){
+        wrap.querySelectorAll(selector).forEach(choice=>{
+          const select=()=>{
+            state.demo[key]=choice.dataset.v;
+            render();
+          };
+          choice.onclick=select;
+          choice.onkeydown=e=>{
+            if(e.key==='Enter' || e.key===' '){e.preventDefault(); select();}
+          };
+        });
+      }
 
+      bindChoices('#sinifRow .choice','sinif');
+      bindChoices('#dersRow .choice','ders');
 
-  render();
-})();
-</script>
+      wrap.querySelector('#next').onclick=()=>{
+        const errors=validateDemo();
+        if(errors.length){
+          input.value=state.demo.bolum;
+          input.classList.toggle('input-error',state.demo.bolum.length<2);
+          wrap.querySelector('#sinifRow').classList.toggle('choice-error',!state.demo.sinif);
+          wrap.querySelector('#dersRow').classList.toggle('choice-error',!state.demo.ders);
+          const errorBox=wrap.querySelector('#demoError');
+          errorBox.textContent=errors.join(' ');
+          errorBox.classList.add('show');
+          return;
+        }
+        state.screen='instructions';
+        render();
+      };
+
+      return wrap;
+    };
+
+    screens.instructions=function(){
+      const wrap=el(`
+        <div>
+          ${progressBar(1,TOTAL_SCREENS)}
+          <h2>Kurallar</h2>
+          <div class="card stack">
+            <p style="margin-bottom:0">• Adaylar sırayla ve tek tek gösterilecek; her adayın yetkinlikleri ile kendi ağzından yaptığı kısa tanıtım birlikte değerlendirilecek.</p>
+            <p style="margin-bottom:0">• Her adayda, birleşik değerlendirmeye göre o ana kadar gördüklerin arasında <b>en iyisi olup olmadığını</b> göreceksin; sırada kimin olduğunu bilemeyeceksin.</p>
+            <p style="margin-bottom:0">• “Geç” dersen bir daha o adaya dönemezsin.</p>
+            <p style="margin-bottom:0">• “Bu adayı seç ve dur” dersen tur biter ve gerçekten en iyisini seçip seçmediğini görürsün.</p>
+          </div>
+          <div style="height:20px"></div>
+          <button class="btn btn-primary" id="go">Anladım, başlayalım</button>
+        </div>
+      `);
+
+      wrap.querySelector('#go').onclick=()=>{
+        state.trial=newTrial(state.order[0]);
+        state.screen='trial';
+        render();
+      };
+      return wrap;
+    };
+
+    screens.trial=function(){
+      const t=state.trial;
+      const idx=t.pos;
+      const val=t.values[idx];
+      const profile=t.profiles[idx];
+      const isBest=val>t.seenMax;
+      const isLast=idx===t.n-1;
+
+      const wrap=el(`
+        <div>
+          ${progressBar(2+state.trialIndex,TOTAL_SCREENS)}
+          <div class="n-badge">Tur ${state.trialIndex+1} / ${N_VALUES.length} · n = ${t.n}</div>
+          <div class="ticket">
+            <div class="ticket-tab">
+              <span>ADAY DOSYASI</span>
+              <span>${idx+1} / ${t.n}</span>
+            </div>
+            <div class="ticket-body">
+              <div class="candidate-summary">
+                <div>
+                  <div class="candidate-code">Aday ${profile.id}</div>
+                  <div class="candidate-meta">${profile.experienceYears} yıl deneyim · anonim profil</div>
+                </div>
+                <div class="candidate-position">${idx+1}</div>
+              </div>
+              <div class="competency-list">${renderCompetencies(profile)}</div>
+              <div class="story-card">
+                <div class="story-label">Adayın kısa anlatımı</div>
+                <p>${profile.storyline}</p>
+              </div>
+              <div class="tag ${isBest?'best':'notbest'}">${isBest?'★ Şimdiye kadarkilerin en iyisi':'Şimdiye kadarkilerin en iyisi değil'}</div>
+            </div>
+          </div>
+          ${isLast?'<div class="note-forced">Bu son aday — birini seçmek zorundasın.</div>':''}
+          <div class="actions">
+            ${!isLast?'<button class="btn btn-ghost" id="pass">Geç, sıradakine bak →</button>':''}
+            <button class="btn btn-stop" id="stop">${isLast?'Bu Adayı Seç (Son Şansın)':'Bu Adayı Seç ve Dur'}</button>
+          </div>
+        </div>
+      `);
+
+      if(!isLast){
+        wrap.querySelector('#pass').onclick=()=>{
+          t.actions.push({
+            position:idx+1,
+            decision:'pass',
+            runningBest:isBest,
+            elapsedMs:Date.now()-t.startedAt
+          });
+          t.seenMax=Math.max(t.seenMax,val);
+          t.pos+=1;
+          render();
+        };
+      }
+
+      wrap.querySelector('#stop').onclick=()=>{
+        const success=idx===t.bestIndex;
+        t.actions.push({
+          position:idx+1,
+          decision:'stop',
+          runningBest:isBest,
+          elapsedMs:Date.now()-t.startedAt
+        });
+
+        state.trialResults.push({
+          n:t.n,
+          stopPosition:idx+1,
+          success,
+          trueBestPosition:t.bestIndex+1,
+          selectedScore:Number(t.profiles[idx].overallScore.toFixed(1)),
+          bestScore:Number(t.profiles[t.bestIndex].overallScore.toFixed(1)),
+          trialDurationMs:Date.now()-t.startedAt,
+          values:roundedValues(t.values),
+          profiles:t.profiles.map(profile=>({
+            id:profile.id,
+            experienceYears:profile.experienceYears,
+            competencyScores:{...profile.competencyScores},
+            overallScore:Number(profile.overallScore.toFixed(4)),
+            storyline:profile.storyline
+          })),
+          runningBestPositions:t.values
+            .map((_,i)=>isRunningBest(t.values,i)?i+1:null)
+            .filter(Boolean),
+          actions:t.actions.slice()
+        });
+
+        state.screen='trialResult';
+        render();
+      };
+
+      return wrap;
+    };
+
+    screens.trialResult=function(){
+      const r=state.trialResults[state.trialResults.length-1];
+      const isLastTrial=state.trialIndex===N_VALUES.length-1;
+
+      const wrap=el(`
+        <div>
+          ${progressBar(2+state.trialIndex,TOTAL_SCREENS)}
+          <div class="result-badge ${r.success?'win':'lose'}">
+            <div class="big">${r.success?'En iyisini yakaladın 🎯':'Bu sefer olmadı'}</div>
+            <p style="margin:0;font-size:13px">${r.success
+              ? `${r.stopPosition}. adayda durdun ve birleşik değerlendirmede gerçekten en iyi aday oymuş.`
+              : `${r.stopPosition}. adayda durdun. Gerçek en iyi aday ${r.trueBestPosition}. sıradaymış.`}</p>
+          </div>
+          <div class="profile-comparison">
+            <div class="profile-score-box">
+              <span>Seçtiğin aday</span>
+              <strong>${r.selectedScore}<small style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)"> / 100</small></strong>
+            </div>
+            <div class="profile-score-box">
+              <span>Turun en iyisi</span>
+              <strong>${r.bestScore}<small style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)"> / 100</small></strong>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="cont">${isLastTrial?'Bitir':'Sıradaki Tura Geç'}</button>
+        </div>
+      `);
+
+      wrap.querySelector('#cont').onclick=()=>{
+        if(isLastTrial){
+          state.screen='done';
+          state.saveStatus='idle';
+          render();
+          submitResults();
+          return;
+        }
+        state.trialIndex+=1;
+        state.trial=newTrial(state.order[state.trialIndex]);
+        state.screen='trial';
+        render();
+      };
+
+      return wrap;
+    };
+
+    screens.done=function(){
+      const status=state.saveStatus;
+      let icon='✓';
+      let iconClass='';
+      let title='Cevapların gönderildi';
+      let message='Teşekkürler. Google Form yanıtının kaydedildiğini doğruladı.';
+
+      if(status==='idle' || status==='saving'){
+        icon='…';
+        iconClass='loading';
+        title='Cevapların kaydediliyor';
+        message='Bu sayfayı kapatmadan birkaç saniye bekle.';
+      }else if(status==='error'){
+        icon='!';
+        iconClass='error';
+        title='Otomatik gönderim tamamlanamadı';
+        message=`${escapeHtml(state.saveError)} Yanıtların henüz kaydedilmedi.`;
+      }
+
+      const wrap=el(`
+        <div>
+          <div class="eyebrow">Araştırma tamamlandı</div>
+          <h1>${title}</h1>
+          <div class="card">
+            <div class="save-icon ${iconClass}">${icon}</div>
+            <p style="text-align:center;margin-bottom:0">${message}</p>
+            ${status==='error'
+              ? '<div style="height:16px"></div><button class="btn btn-primary" id="retry">Tekrar Dene</button>'
+              : ''}
+          </div>
+          <a class="fallback-link" href="${buildPrefilledUrl()}" target="_blank" rel="noopener">Otomatik gönderim olmazsa formu aç</a>
+        </div>
+      `);
+
+      const retry=wrap.querySelector('#retry');
+      if(retry) retry.onclick=submitResults;
+      return wrap;
+    };
+
+    render();
+  })();
+  </script>
 </body>
 </html>
