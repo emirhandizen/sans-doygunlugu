@@ -1098,12 +1098,11 @@
       return `${GOOGLE_FORM_VIEW}?${params.toString()}`;
     }
 
-    function buildBridgeParams(callbackName){
+    function buildPostParams(){
       const byN={};
       state.trialResults.forEach(r => {byN[r.n]=r;});
 
       return new URLSearchParams({
-        callback:callbackName,
         bolum:state.demo.bolum,
         sinif:state.demo.sinif,
         ders:state.demo.ders,
@@ -1138,46 +1137,82 @@
       state.saveError='';
       render();
 
-      const callbackName=`__sansDoygunlugu_${state.sessionId.replace(/[^a-zA-Z0-9_$]/g,'')}`;
+      const requestStartedAt=Date.now();
+
+      fetch(GOOGLE_APPS_SCRIPT_URL,{
+        method:'POST',
+        mode:'no-cors',
+        credentials:'omit',
+        body:buildPostParams()
+      }).catch(()=>{
+        // CORS nedeniyle yanıt okunamaz. Gerçek kayıt durumu aşağıdaki
+        // kısa JSONP isteğiyle ayrıca doğrulanır.
+      });
+
+      window.setTimeout(()=>pollSaveStatus(requestStartedAt),900);
+    }
+
+    function pollSaveStatus(requestStartedAt){
+      if(state.saveStatus !== 'saving') return;
+
+      const callbackName=`__sdStatus_${state.sessionId.replace(/[^a-zA-Z0-9_$]/g,'')}_${Date.now()}`;
       const script=document.createElement('script');
-      let finished=false;
-      let timeoutId;
+      let settled=false;
+      let requestTimeout;
 
       function cleanup(){
-        window.clearTimeout(timeoutId);
+        window.clearTimeout(requestTimeout);
         script.remove();
-        try{ delete window[callbackName]; }catch(error){ window[callbackName]=undefined; }
+        try{delete window[callbackName];}catch(error){window[callbackName]=undefined;}
       }
 
-      function finish(status,message=''){
-        if(finished) return;
-        finished=true;
+      function retry(){
         cleanup();
-        state.saveStatus=status;
-        state.saveError=message;
-        render();
+        if(Date.now()-requestStartedAt>=60000){
+          state.saveStatus='error';
+          state.saveError='Google Form zamanında yanıt vermedi. Lütfen tekrar dene.';
+          render();
+          return;
+        }
+        window.setTimeout(()=>pollSaveStatus(requestStartedAt),1200);
       }
 
       window[callbackName]=(result)=>{
-        if(result && result.ok === true){
-          finish('success');
+        if(settled) return;
+        settled=true;
+
+        if(result && result.saved===true){
+          cleanup();
+          state.saveStatus='success';
+          state.saveError='';
+          render();
           return;
         }
-        const message=result && result.error
-          ? String(result.error)
-          : 'Google Form yanıtı kaydedemedi.';
-        finish('error',message);
+
+        if(result && result.error){
+          cleanup();
+          state.saveStatus='error';
+          state.saveError=String(result.error);
+          render();
+          return;
+        }
+
+        retry();
       };
 
       script.async=true;
-      script.src=`${GOOGLE_APPS_SCRIPT_URL}?${buildBridgeParams(callbackName).toString()}`;
+      script.src=`${GOOGLE_APPS_SCRIPT_URL}?action=status&token=${encodeURIComponent(state.sessionId)}&callback=${encodeURIComponent(callbackName)}&_=${Date.now()}`;
       script.onerror=()=>{
-        finish('error','Google Apps Script bağlantısına ulaşılamadı.');
+        if(settled) return;
+        settled=true;
+        retry();
       };
 
-      timeoutId=window.setTimeout(()=>{
-        finish('error','Google Form zamanında yanıt vermedi. Lütfen tekrar dene.');
-      },20000);
+      requestTimeout=window.setTimeout(()=>{
+        if(settled) return;
+        settled=true;
+        retry();
+      },8000);
 
       document.head.appendChild(script);
     }
