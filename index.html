@@ -776,11 +776,6 @@
       n12iyi: 'entry.1274098599',
       n20dur: 'entry.2092638518',
       n20iyi: 'entry.1446373079',
-
-      // Google Form'a “Deney ayrıntıları (JSON)” adlı uzun yanıt sorusu
-      // ekledikten sonra buraya onun entry numarasını yazacağız.
-      // Boş bırakıldığında mevcut alanlar yine otomatik gönderilir.
-      detay: ''
     };
 
     let state = createInitialState();
@@ -807,20 +802,31 @@
       return `sd-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
     }
 
-    function shuffle(arr){
+    function shuffle(arr,rng=Math.random){
       for(let i=arr.length-1; i>0; i--){
-        const j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(rng() * (i + 1));
         [arr[i], arr[j]] = [arr[j], arr[i]];
       }
       return arr;
+    }
+
+    function mulberry32(seed){
+      let value=seed>>>0;
+      return function(){
+        value+=0x6D2B79F5;
+        let t=value;
+        t=Math.imul(t^(t>>>15),t|1);
+        t^=t+Math.imul(t^(t>>>7),t|61);
+        return ((t^(t>>>14))>>>0)/4294967296;
+      };
     }
 
     function clamp(value,min,max){
       return Math.max(min,Math.min(max,value));
     }
 
-    function randomCentered(){
-      return Math.random()+Math.random()+Math.random()-1.5;
+    function randomCentered(rng=Math.random){
+      return rng()+rng()+rng()-1.5;
     }
 
     function scoreBand(score){
@@ -861,17 +867,17 @@
       return `${intro} ${detail}`;
     }
 
-    function createCandidateProfile(position,trialSize){
-      const base=48+Math.random()*43;
-      const standoutIndex=Math.floor(Math.random()*COMPETENCIES.length);
-      let developmentIndex=Math.floor(Math.random()*COMPETENCIES.length);
+    function createCandidateProfile(position,trialSize,rng=Math.random){
+      const base=48+rng()*43;
+      const standoutIndex=Math.floor(rng()*COMPETENCIES.length);
+      let developmentIndex=Math.floor(rng()*COMPETENCIES.length);
       while(developmentIndex===standoutIndex){
-        developmentIndex=Math.floor(Math.random()*COMPETENCIES.length);
+        developmentIndex=Math.floor(rng()*COMPETENCIES.length);
       }
 
       const competencyScores={};
       COMPETENCIES.forEach((item,index)=>{
-        let modifier=randomCentered()*14;
+        let modifier=randomCentered(rng)*14;
         if(index===standoutIndex) modifier+=7;
         if(index===developmentIndex) modifier-=7;
         competencyScores[item.key]=clamp(Math.round(base+modifier),38,98);
@@ -883,7 +889,7 @@
       );
 
       const experienceYears=clamp(
-        Math.round(1+(overallScore-45)/8+randomCentered()),
+        Math.round(1+(overallScore-45)/8+randomCentered(rng)),
         1,
         8
       );
@@ -894,6 +900,50 @@
         competencyScores,
         overallScore:Number(overallScore.toFixed(4)),
         storyline:''
+      };
+    }
+
+
+    function buildStandardPools(){
+      const rng=mulberry32(22092026);
+      const availableTemplates=shuffle(CANDIDATE_STORIES.slice(),rng);
+      const pools={};
+
+      N_VALUES.forEach(n=>{
+        let profiles;
+        let values;
+        let bestIndex;
+
+        do {
+          profiles=Array.from({length:n},(_,index)=>createCandidateProfile(index,n,rng));
+          values=profiles.map(profile=>profile.overallScore);
+          const maxScore=Math.max(...values);
+          const topIndexes=values
+            .map((value,index)=>value===maxScore?index:-1)
+            .filter(index=>index!==-1);
+          bestIndex=topIndexes.length===1?topIndexes[0]:-1;
+        } while(bestIndex===-1);
+
+        profiles.forEach((profile,index)=>{
+          const template=selectStoryTemplate(profile,availableTemplates);
+          profile.poolId=`n${n}-${String(index+1).padStart(2,'0')}`;
+          profile.storyTemplate=template.id;
+          profile.storyline=createCandidateStory(profile,template,index===bestIndex);
+        });
+
+        pools[n]=profiles;
+      });
+
+      return pools;
+    }
+
+    const STANDARD_POOLS=buildStandardPools();
+    const POOL_VERSION='2026-08-v1';
+
+    function cloneProfile(profile){
+      return {
+        ...profile,
+        competencyScores:{...profile.competencyScores}
       };
     }
 
@@ -914,28 +964,17 @@
     }
 
     function newTrial(n){
-      let profiles;
-      let values;
-      let bestIndex;
+      const profiles=shuffle(
+        STANDARD_POOLS[n].map(cloneProfile),
+        Math.random
+      ).map((profile,index)=>({
+        ...profile,
+        id:String(index+1).padStart(2,'0')
+      }));
 
-      // Her turda yalnızca bir gerçek en iyi aday olmasını sağla.
-      // En yüksek birleşik puan eşitse aday havuzu baştan üretilir.
-      do {
-        profiles=Array.from({length:n},(_,index)=>createCandidateProfile(index,n));
-        values=profiles.map(profile=>profile.overallScore);
-        const maxScore=Math.max(...values);
-        const topIndexes=values
-          .map((value,index)=>value===maxScore?index:-1)
-          .filter(index=>index!==-1);
-        bestIndex=topIndexes.length===1?topIndexes[0]:-1;
-      } while(bestIndex===-1);
+      const values=profiles.map(profile=>profile.overallScore);
+      const bestIndex=values.indexOf(Math.max(...values));
 
-      const availableTemplates=shuffle(CANDIDATE_STORIES.slice());
-      profiles.forEach((profile,index)=>{
-        const template=selectStoryTemplate(profile,availableTemplates);
-        profile.storyTemplate=template.id;
-        profile.storyline=createCandidateStory(profile,template,index===bestIndex);
-      });
       return {
         n,
         profiles,
@@ -1000,27 +1039,37 @@
     }
 
     function buildDetailedPayload(){
-      const endedAt = Date.now();
+      const endedAt=Date.now();
       return {
-        schemaVersion:1,
-        sessionId:state.sessionId,
-        startedAt:new Date(state.startedAt).toISOString(),
-        endedAt:new Date(endedAt).toISOString(),
-        totalDurationMs:endedAt-state.startedAt,
-        trialOrder:state.order,
-        demographics:{...state.demo},
-        trials:state.trialResults.map(r => ({
+        v:2,
+        pv:POOL_VERSION,
+        sid:state.sessionId,
+        st:new Date(state.startedAt).toISOString(),
+        et:new Date(endedAt).toISOString(),
+        td:endedAt-state.startedAt,
+        ord:state.order,
+        dem:{b:state.demo.bolum,s:state.demo.sinif,d:state.demo.ders},
+        tr:state.trialResults.map(r=>({
           n:r.n,
-          stopPosition:r.stopPosition,
-          success:r.success,
-          trueBestPosition:r.trueBestPosition,
-          selectedScore:r.selectedScore,
-          bestScore:r.bestScore,
-          trialDurationMs:r.trialDurationMs,
-          values:r.values,
-          profiles:r.profiles,
-          runningBestPositions:r.runningBestPositions,
-          actions:r.actions
+          sp:r.stopPosition,
+          sr:Number((r.stopPosition/r.n).toFixed(4)),
+          ok:r.success?1:0,
+          bp:r.trueBestPosition,
+          ss:r.selectedScore,
+          bs:r.bestScore,
+          gap:Number((r.bestScore-r.selectedScore).toFixed(1)),
+          dur:r.trialDurationMs,
+          pc:r.stopPosition-1,
+          prb:r.passedRunningBestCount,
+          srb:r.selectedWasRunningBest?1:0,
+          vals:r.values,
+          po:r.profileOrder,
+          act:r.actions.map(a=>[
+            a.position,
+            a.decision==='stop'?'S':'P',
+            a.runningBest?1:0,
+            a.elapsedMs
+          ])
         }))
       };
     }
@@ -1039,10 +1088,6 @@
       params.append(ENTRY.n12iyi,byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '');
       params.append(ENTRY.n20dur,byN[20] ? String(byN[20].stopPosition) : '');
       params.append(ENTRY.n20iyi,byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : '');
-
-      if(ENTRY.detay){
-        params.append(ENTRY.detay,JSON.stringify(buildDetailedPayload()));
-      }
 
       return params;
     }
@@ -1067,7 +1112,8 @@
         n12dur:byN[12] ? String(byN[12].stopPosition) : '',
         n12iyi:byN[12] ? (byN[12].success ? 'Evet' : 'Hayır') : '',
         n20dur:byN[20] ? String(byN[20].stopPosition) : '',
-        n20iyi:byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : ''
+        n20iyi:byN[20] ? (byN[20].success ? 'Evet' : 'Hayır') : '',
+        detay:JSON.stringify(buildDetailedPayload())
       });
     }
 
@@ -1148,7 +1194,7 @@
           </div>
           <div style="height:14px"></div>
           <div class="card stack">
-            <p style="margin-bottom:0;font-size:13px">Kimlik bilgisi toplanmıyor, yaklaşık 2 dakika sürüyor. Cevapların bir istatistik araştırmasında anonim olarak kullanılacak.</p>
+            <p style="margin-bottom:0;font-size:13px">Kimlik bilgisi toplanmıyor. Cevapların bir istatistik araştırmasında anonim olarak kullanılacak.</p>
           </div>
           <div style="height:20px"></div>
           <button class="btn btn-primary" id="start">Başla</button>
@@ -1240,7 +1286,7 @@
             <p style="margin-bottom:0">• Adaylar sırayla ve tek tek gösterilecek; her adayın yetkinlikleri ile kendi ağzından yaptığı kısa tanıtım birlikte değerlendirilecek.</p>
             <p style="margin-bottom:0">• Her adayda, birleşik değerlendirmeye göre o ana kadar gördüklerin arasında <b>en iyisi olup olmadığını</b> göreceksin; sırada kimin olduğunu bilemeyeceksin.</p>
             <p style="margin-bottom:0">• “Geç” dersen bir daha o adaya dönemezsin.</p>
-            <p style="margin-bottom:0">• “Bu adayı seç ve dur” dersen tur biter ve gerçekten en iyisini seçip seçmediğini görürsün.</p>
+            <p style="margin-bottom:0">• “Bu adayı seç ve dur” dersen tur biter. Sonuçları üç tur tamamlandıktan sonra görürsün.</p>
           </div>
           <div style="height:20px"></div>
           <button class="btn btn-primary" id="go">Anladım, başlayalım</button>
@@ -1328,61 +1374,48 @@
           bestScore:Number(t.profiles[t.bestIndex].overallScore.toFixed(1)),
           trialDurationMs:Date.now()-t.startedAt,
           values:roundedValues(t.values),
-          profiles:t.profiles.map(profile=>({
-            id:profile.id,
-            experienceYears:profile.experienceYears,
-            competencyScores:{...profile.competencyScores},
-            overallScore:Number(profile.overallScore.toFixed(4)),
-            storyline:profile.storyline
-          })),
+          profileOrder:t.profiles.map(profile=>profile.poolId),
+          selectedWasRunningBest:isBest,
+          passedRunningBestCount:t.actions.filter(action=>
+            action.decision==='pass' && action.runningBest
+          ).length,
           runningBestPositions:t.values
             .map((_,i)=>isRunningBest(t.values,i)?i+1:null)
             .filter(Boolean),
           actions:t.actions.slice()
         });
 
-        state.screen='trialResult';
-        render();
-      };
-
-      return wrap;
-    };
-
-    screens.trialResult=function(){
-      const r=state.trialResults[state.trialResults.length-1];
-      const isLastTrial=state.trialIndex===N_VALUES.length-1;
-
-      const wrap=el(`
-        <div>
-          ${progressBar(2+state.trialIndex,TOTAL_SCREENS)}
-          <div class="result-badge ${r.success?'win':'lose'}">
-            <div class="big">${r.success?'En iyisini yakaladın 🎯':'Bu sefer olmadı'}</div>
-            <p style="margin:0;font-size:13px">${r.success
-              ? `${r.stopPosition}. adayda durdun ve birleşik değerlendirmede gerçekten en iyi aday oymuş.`
-              : `${r.stopPosition}. adayda durdun. Gerçek en iyi aday ${r.trueBestPosition}. sıradaymış.`}</p>
-          </div>
-          <div class="profile-comparison">
-            <div class="profile-score-box">
-              <span>Seçtiğin aday</span>
-              <strong>${r.selectedScore}<small style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)"> / 100</small></strong>
-            </div>
-            <div class="profile-score-box">
-              <span>Turun en iyisi</span>
-              <strong>${r.bestScore}<small style="font-family:Inter,sans-serif;font-size:11px;color:var(--ink-soft)"> / 100</small></strong>
-            </div>
-          </div>
-          <button class="btn btn-primary" id="cont">${isLastTrial?'Bitir':'Sıradaki Tura Geç'}</button>
-        </div>
-      `);
-
-      wrap.querySelector('#cont').onclick=()=>{
+        const isLastTrial=state.trialIndex===N_VALUES.length-1;
         if(isLastTrial){
           state.screen='done';
           state.saveStatus='idle';
           render();
           submitResults();
-          return;
+        }else{
+          state.screen='betweenTrials';
+          render();
         }
+      };
+
+      return wrap;
+    };
+
+    screens.betweenTrials=function(){
+      const completed=state.trialIndex+1;
+      const wrap=el(`
+        <div>
+          ${progressBar(2+state.trialIndex,TOTAL_SCREENS)}
+          <div class="eyebrow">Tur ${completed} / ${N_VALUES.length}</div>
+          <h1>Tur tamamlandı</h1>
+          <div class="card">
+            <p style="text-align:center;margin-bottom:0">Sonuçlar deneyin sonunda gösterilecek.</p>
+          </div>
+          <div style="height:20px"></div>
+          <button class="btn btn-primary" id="cont">Sıradaki Tura Geç</button>
+        </div>
+      `);
+
+      wrap.querySelector('#cont').onclick=()=>{
         state.trialIndex+=1;
         state.trial=newTrial(state.order[state.trialIndex]);
         state.screen='trial';
@@ -1397,7 +1430,7 @@
       let icon='✓';
       let iconClass='';
       let title='Cevapların gönderildi';
-      let message='Teşekkürler. Google Form yanıtının kaydedildiğini doğruladı.';
+      let message='Teşekkürler. Google Form yanıtının ve davranış verilerinin kaydedildiği doğrulandı.';
 
       if(status==='idle' || status==='saving'){
         icon='…';
@@ -1408,8 +1441,20 @@
         icon='!';
         iconClass='error';
         title='Otomatik gönderim tamamlanamadı';
-        message=`${escapeHtml(state.saveError)} Yanıtların henüz kaydedilmedi.`;
+        message=`${escapeHtml(state.saveError)} Yanıtların henüz tamamen kaydedilmedi.`;
       }
+
+      const resultRows=state.trialResults
+        .slice()
+        .sort((a,b)=>a.n-b.n)
+        .map(r=>`
+          <div class="profile-score-box">
+            <span>${r.n} adaylık tur</span>
+            <strong style="font-size:17px">${r.success?'Başarılı':'Başarısız'}</strong>
+            <div style="font-size:11px;color:var(--ink-soft);margin-top:5px">
+              ${r.stopPosition}. sırada durdun · En iyi ${r.trueBestPosition}. sıradaydı
+            </div>
+          </div>`).join('');
 
       const wrap=el(`
         <div>
@@ -1422,7 +1467,12 @@
               ? '<div style="height:16px"></div><button class="btn btn-primary" id="retry">Tekrar Dene</button>'
               : ''}
           </div>
-          <a class="fallback-link" href="${buildPrefilledUrl()}" target="_blank" rel="noopener">Otomatik gönderim olmazsa formu aç</a>
+          <div style="height:18px"></div>
+          <h2>Deney sonuçların</h2>
+          <div class="stack">${resultRows}</div>
+          ${status==='error'
+            ? `<a class="fallback-link" href="${buildPrefilledUrl()}" target="_blank" rel="noopener">Formu elle aç</a>`
+            : ''}
         </div>
       `);
 
